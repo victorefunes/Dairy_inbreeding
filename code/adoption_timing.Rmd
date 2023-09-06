@@ -1,0 +1,1590 @@
+---
+title: "Timing genomic Testing Adoption"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+  word_document: default
+---
+
+Load libraries
+```{r}
+options(warn=-1)
+library(tidyverse)
+library(bigrquery)
+library(lubridate)
+library(statar)
+library(knitr)
+library(stringi)
+library(broom)
+library(ggrepel)
+library(ggfortify)
+
+folder <- "C:/Users/victorf2"
+#folder <- "C:/Users/victo"
+
+setwd(paste0(folder, "/Box/dairy_matching/code/AISS data"))
+```
+
+# NAAB Info dataset
+```{r}
+bq_auth(email = "victorf2@illinois.edu")
+
+projectid <- "dairy-168114"
+query <- "
+SELECT
+    reg_id,
+    id_number,
+    breed,
+    country,
+    primary_naab_code,
+    naab_codes,
+    reg_name,
+    birthdate,
+    semen_release_date,
+    genotype_information,
+    sire_breed,
+    sire_country,
+    sire_id_number,
+    dam_breed,
+    dam_country,
+    dam_id_number,
+    mgs_breed,
+    mgs_country,
+    mgs_id_number,
+    status
+FROM
+    CDCB_data.NAAB_Info
+"
+
+naab <- bq_project_query(projectid, query)
+naab <- bq_table_download(naab)
+
+naab <- naab |>
+  mutate(birthdate = mdy(birthdate),
+         yob = year(birthdate))
+
+naab <- naab |>
+  mutate(id_number = stringr::str_replace(id_number, "\\.", ""),
+         id_number = str_pad(id_number, width = 12, side = "left", pad = "0"),
+         reg_id = paste0(breed, country, id_number))
+```
+
+```{r}
+naab <- naab |>
+  mutate(sire_id_number = stringr::str_replace(sire_id_number, "\\.", ""),
+         sire_id_number = str_pad(sire_id_number, width = 12, side = "left", pad = "0"),
+         sire_id = paste0(sire_breed, sire_country, sire_id_number))
+
+naab$sire_id <- replace(naab$sire_id, naab$sire_id == "NANANA", NA)
+
+naab <- naab |>
+  mutate(mgs_id_number = stringr::str_replace(mgs_id_number, "\\.", ""),
+         mgs_id_number = str_pad(mgs_id_number, width = 12, side = "left", pad = "0"),
+         mgs_id = paste0(mgs_breed, mgs_country, mgs_id_number))
+
+naab$mgs_id <- replace(naab$mgs_id, naab$mgs_id == "NANANA", NA)
+
+naab <- naab |>
+  mutate(dam_id_number = stringr::str_replace(dam_id_number, "\\.", ""),
+         dam_id_number = str_pad(dam_id_number, width = 12, side = "left", pad = "0"),
+         dam_id = paste0(dam_breed, dam_country, dam_id_number))
+
+naab$dam_id <- replace(naab$dam_id, naab$dam_id == "NANANA", NA)
+```
+
+# AISS data
+```{r}
+query <- "SELECT
+  country,
+  id_number,
+  name,
+  primary_stud_code,
+  sire_id,
+  mgs_id,
+  period,
+  status,
+  breed,
+  naab_code,
+  pta_milk as pta_milk,
+  pta_fat_lb as pta_fat_lb,
+  pta_protein_lb as pta_protein_lb,
+  pta_scs as pta_scs,
+  pta_pl as pta_pl,
+  pta_dpr as pta_dpr,
+  pta_hcr as pta_hcr,
+  pta_ccr as pta_ccr,
+  pta_liv as pta_liv,
+  pta_ssb as pta_ssb,
+  pta_dsb as pta_dsb,
+  pta_type as pta_type,
+  pta_stature as pta_stature,
+  pta_strength as pta_strength,
+  pta_body_depth as pta_body_depth,
+  pta_dairy_form as pta_dairy_form,
+  pta_rump_angle as pta_rump_angle,
+  pta_thurl_width as pta_thurl_width,
+  pta_rear_legs_side as pta_rear_legs_side,
+  pta_rear_legs_rear as pta_rear_legs_rear,
+  pta_foot_angle as pta_foot_angle,
+  pta_foot_leg_score as pta_foot_leg_score,
+  pta_fore_udder as pta_fore_udder,
+  pta_rear_udder_height as pta_rear_udder_height,
+  pta_rear_udder_width as pta_rear_udder_width,
+  pta_udder_cleft as pta_udder_cleft,
+  pta_udder_depth as pta_udder_depth,
+  pta_teat_front_place as pta_teat_front_place,
+  pta_teat_rear_place as pta_teat_rear_place,
+  pta_teat_length as pta_teat_length,
+  pta_mobility,
+  pta_gest_length as pta_gest_length,
+  pta_ketosis as pta_ketosis,
+  pta_metritis as pta_metritis,
+  pta_mastitis as pta_mastitis,
+  pta_milk_fever as pta_milk_fever,
+  FM as FM,
+  CM as CM,
+  GM as GM,
+  NM as NM,
+  TPI,
+  udder_composite, 
+  body_weight_composite,
+  feet_legs_composite,
+  aaa_rating,
+  daughts_in_milk_pta,
+  dob,
+  semen_price
+FROM
+  CDCB_data.NAAB_AISS
+"
+
+naab_aiss <- bq_project_query(projectid, query)
+naab_aiss <- bq_table_download(naab_aiss)
+
+naab_aiss <- naab_aiss %>%
+  separate(period, into = c("year", "per_num"), sep = "-", remove = FALSE) |>
+  mutate(dob = ymd(dob),
+         yob = year(dob))
+
+naab_aiss <- naab_aiss |>
+  mutate(id_number = stringr::str_replace(id_number, "\\.", ""),
+         id_number = str_pad(id_number, width = 12, side = "left", pad = "0"),
+         reg_id = paste0(breed, country, id_number))
+```
+
+# Characterizing "missing" status animals
+
+1. National origin
+```{r}
+naab_aiss |>
+  filter(is.na(status)) |>
+  tab(country)
+```
+
+2. Number of daughters
+```{r}
+naab_aiss |>
+  filter(is.na(status)) |>
+  group_by(country) |>
+  filter(daughts_in_milk_pta != 99999) |> 
+  summarise(daught = max(daughts_in_milk_pta, na.rm = TRUE),  N = n())
+```
+
+3. Age
+```{r}
+naab_aiss |> 
+  mutate(period = ym(period),
+         year = year(period),
+         age = year-yob) ->
+  naab_aiss
+```
+
+Active and Foreign bulls show up first at ages 4 or 5, genomic bulls at age 1.
+```{r, include = FALSE}
+naab_aiss |>
+  group_by(reg_id) |>
+  arrange(age) |>
+  slice(1) |>
+  ungroup() |>
+  filter(!is.na(status)) |>
+  tab(age, status) |> 
+  select(c(age, status, `Freq.`)) |> 
+  pivot_wider(id_cols = age, names_from = "status", values_from = "Freq.") |>
+  data.frame() ->
+  table1
+```
+
+```{r}
+kable(table1)
+```
+
+Fill out missing values with last missing status
+```{r}
+naab_aiss|> 
+  group_by(reg_id) |> 
+  fill(status, .direction = "down") |>
+  ungroup() ->
+  naab_aiss
+```
+
+Status by year of proof
+```{r}
+naab_aiss |>
+  mutate(year_proof = year(period)) ->
+  naab_aiss
+```
+
+```{r, include = FALSE}
+table2 <- naab_aiss |>
+  filter(!is.na(status)) |>
+  tab(status, year_proof) |>
+  select(c(status, year_proof, `Freq.`)) |> 
+  pivot_wider(id_cols = year_proof, names_from = "status", values_from = "Freq.") |>
+  data.frame()
+```
+
+```{r}
+kable(table2)
+```
+
+Status by year of birth
+```{r, include = FALSE}
+table3 <- naab_aiss |>
+  filter(!is.na(status)) |>
+  tab(status, age) |>
+  filter(age < 12) |>  
+  select(c(status, age, `Freq.`)) |> 
+  pivot_wider(id_cols = age, names_from = "status", values_from = "Freq.") |>
+  arrange(age) |>
+  data.frame()
+```
+
+```{r}
+kable(table3)
+```
+
+Year of proof and age by status
+
+**Question**: What is the valid comparison? Let $t$ be the year of birth of a bull.
+1. $genomic_{t}$ vs $active_{t}$
+2. $genomic_{t}$ vs $active_{t-5}$
+
+```{r, include = FALSE}
+naab_aiss |>
+  filter(status == "G") |>
+  tab(year_proof, age) |>
+  select(c(year_proof, age, `Freq.`)) |>
+  pivot_wider(id_cols = "age", names_from = "year_proof", values_from = "Freq.") ->
+  genomic_age
+```
+
+```{r}
+kable(genomic_age)
+```
+
+```{r, include = FALSE}
+naab_aiss |>
+  filter(status == "A" & age < 13 & year_proof > 2004) |>
+  tab(year_proof, age) |>
+  select(c(year_proof, age, `Freq.`)) |>
+  pivot_wider(id_cols = "age", names_from = "year_proof", values_from = "Freq.") |>
+  arrange(age) ->
+  active_age
+```
+
+```{r}
+kable(active_age)
+```
+
+# How old are bulls when they are proven for the first time?:
+
+Genomic-tested bulls are proven mostly at ages 1 or 2, daughter-proven bulls wait until they are 4-6 years old. The average lifespan of a bovine is 10-12 years old [https://livestock.extension.wisc.edu/articles/when-to-cull-bulls](source). We can assume that bulls 10 years and older are just frozen semen samples.
+
+Other thing to note, we have 92 bulls tested before they reach one year of age.
+
+```{r, include = FALSE}
+age_proof_bulls <- naab_aiss |>
+  filter(!is.na(status)) |>
+  mutate(age_proof = year_proof - yob) |>
+  group_by(reg_id, status) |>
+  summarise(age_proof = min(age_proof, na.rm = TRUE)) |>
+  ungroup() |>
+  tab(status, age_proof) 
+
+table4 <- age_proof_bulls |>
+  select(c(status, age_proof, `Freq.`)) |> 
+  pivot_wider(id_cols = age_proof, names_from = "status", values_from = "Freq.") |>
+  arrange(age_proof) |>
+  data.frame()
+```
+
+```{r}
+kable(table4) 
+```
+
+```{r, fig.height = 5, fig.width = 8, fig.align = "center"}
+age_proof_bulls |>
+  rename(frequency = `Freq.`) |>
+  select(c(status, age_proof, frequency)) |>
+  ggplot(aes(x = age_proof, y = frequency, group = status)) + 
+  geom_bar(stat="identity", aes(fill = status)) + 
+  theme_classic() 
+```
+
+The key period to look into is 2010-2015 
+```{r, include = FALSE}
+naab_aiss |>
+  filter(!is.na(status)) |>
+  mutate(age_proof = year_proof - yob) |>
+  group_by(reg_id) |>
+  arrange(period) |>
+  slice_head(n = 1) |>
+  ungroup() |>
+  tab(year, status) |>
+  select(c(year, status, "Freq.")) |>
+  pivot_wider(id_cols = year, names_from = "status", values_from = "Freq.") ->
+  first_proof
+```
+
+```{r}
+kable(first_proof)
+```
+
+CDN data
+```{r}
+cdn <- read.csv(paste0(folder, "/Box/Dairy Industry in US/Data/Network data/cdn_data.csv"))
+naab_aiss <- inner_join(naab_aiss, cdn[c("reg_id_alt", "inbreeding", "relationship")], by = join_by(reg_id == reg_id_alt))
+```
+
+Genomic tested animals are on average more inbred than daughter-proven bulls.
+```{r}
+naab_aiss |>
+  group_by(reg_id) |>
+  arrange(year_proof) |>
+  slice_tail(n = 1) |>
+  ungroup() |> 
+  group_by(status) |> 
+  summarise(inb = mean(inbreeding, na.rm = TRUE), 
+            N = n())
+```
+
+Inbreeding rates are increasing for all classes of bulls, in all cases it increases significantly after the introduction of genomic testing. Here I show the values of the first proof of each animal.
+```{r, include = FALSE}
+naab_aiss |>
+  group_by(reg_id) |>
+  arrange(year_proof) |>
+  slice_head(n = 1) |>
+  ungroup() |>  
+  filter(yob > 2005 & !is.na(status) & inbreeding > 0) |>
+  group_by(status, yob) |> 
+  summarise(inb = mean(inbreeding, na.rm = TRUE)) |> 
+  pivot_wider(id_cols = yob, names_from = "status", values_from = "inb") ->
+  inbreeding_year
+```
+
+```{r}
+kable(inbreeding_year)
+```
+
+The distribution of inbreeding coefficients is skewed to the left, reflecting a higher average inbreeding, as evidenced by its mean
+```{r}
+naab_aiss |> 
+  filter(!is.na(status) & !is.na(inbreeding) & inbreeding > 0) |>
+  group_by(reg_id) |>
+  arrange(year_proof) |>
+  slice_head(n = 1) |>
+  ungroup() |>
+  ggplot(aes(x = inbreeding, group = status)) + 
+  geom_density(aes(fill = status), alpha = 0.35) + 
+  theme_classic() + 
+  xlab("Inbreeding Coefficient") + ylab("Density")
+```
+
+Changes in Net Merit by type of proof and year of birth
+```{r}
+naab_aiss |>
+  group_by(reg_id) |>
+  arrange(year_proof) |>
+  slice_tail(n = 1) |>
+  ungroup() |>
+  filter(!is.na(status) & year > 2008 & year < 2018) |>
+  group_by(year, status) |>
+  summarise(NM = mean(NM, na.rm = TRUE)) |>
+  #pivot_wider(id_cols = year, names_from = "status", values_from = "NM") |>
+  ggplot(aes(x = year, y = NM, group = status)) + 
+  geom_line(aes(color = status)) + 
+  geom_point(aes(color = status)) +
+  theme_classic()
+```
+
+Changes in TPI by type of proof and year of birth
+```{r}
+naab_aiss |>
+  group_by(reg_id) |>
+  arrange(year_proof) |>
+  slice_tail(n = 1) |>
+  ungroup() |>
+  filter(!is.na(status) & year > 2008) |>
+  group_by(year, status) |>
+  summarise(TPI = mean(TPI, na.rm = TRUE)) |>
+  #pivot_wider(id_cols = year, names_from = "status", values_from = "NM") |>
+  ggplot(aes(x = year, y = TPI, group = status)) + 
+  geom_line(aes(color = status)) + 
+  geom_point(aes(color = status)) +
+  theme_classic()
+```
+```{r}
+naab_aiss |>
+  group_by(reg_id) |>
+  arrange(year_proof) |>
+  slice_tail(n = 1) |>
+  ungroup() |>
+  filter(!is.na(status) & year > 2007) |>
+  group_by(year, status) |>
+  summarise(TPI = mean(TPI, na.rm = TRUE)) |>
+  ungroup() |>
+  pivot_wider(id_cols = year, names_from = "status", values_from = "TPI") |>
+  mutate(A_1 = dplyr::lag(A, n = 1),
+         F_1 = dplyr::lag(F, n = 1),
+         G_1 = dplyr::lag(G, n = 1),
+         dA = log(A)-log(A_1),
+         dF = log(F)-log(F_1),
+         dG = log(G)-log(G_1)) |>
+  select(c(year, dA, dG, dF)) |>
+  rename(A = dA, F = dF, G = dG) |>
+  pivot_longer(cols = A:F, names_to = "status", values_to = "dTPI") |>
+  ggplot(aes(x = year, y = dTPI, group = status)) + 
+  geom_line(aes(color = status)) + 
+  geom_point(aes(color = status)) +
+  theme_classic()
+```
+
+
+
+Changes in Milk PTA by type of proof and year of birth
+```{r}
+naab_aiss |>
+  group_by(reg_id) |>
+  arrange(year_proof) |>
+  slice_tail(n = 1) |>
+  ungroup() |>
+  filter(!is.na(status) & year > 2008) |>
+  group_by(year, status) |>
+  summarise(pta_milk = mean(pta_milk, na.rm = TRUE)) |>
+  #pivot_wider(id_cols = year, names_from = "status", values_from = "NM") |>
+  ggplot(aes(x = year, y = pta_milk, group = status)) + 
+  geom_line(aes(color = status)) + 
+  geom_point(aes(color = status)) +
+  theme_classic()
+```
+
+```{r}
+naab_aiss |>
+  group_by(reg_id) |>
+  arrange(year_proof) |>
+  slice_tail(n = 1) |>
+  ungroup() |>
+  filter(!is.na(status) & year > 2007) |>
+  group_by(year, status) |>
+  summarise(pta_milk = mean(pta_milk, na.rm = TRUE)) |>
+  ungroup() |>
+  pivot_wider(id_cols = year, names_from = "status", values_from = "pta_milk") |>
+  mutate(A_1 = dplyr::lag(A, n = 1),
+         F_1 = dplyr::lag(F, n = 1),
+         G_1 = dplyr::lag(G, n = 1),
+         dA = log(A)-log(A_1),
+         dF = log(F)-log(F_1),
+         dG = log(G)-log(G_1)) |>
+  select(c(year, dA, dG, dF)) |>
+  rename(A = dA, F = dF, G = dG) |>
+  pivot_longer(cols = A:F, names_to = "status", values_to = "dpta_milk") |>
+  ggplot(aes(x = year, y = dpta_milk, group = status)) + 
+  geom_line(aes(color = status)) + 
+  geom_point(aes(color = status)) +
+  theme_classic()
+```
+
+Changes in Inbreeding by type of proof and year of birth
+```{r}
+naab_aiss |>
+  group_by(reg_id) |>
+  arrange(year_proof) |>
+  slice_tail(n = 1) |>
+  ungroup() |>
+  filter(!is.na(status) & year > 2008 & year < 2018) |>
+  group_by(year, status) |>
+  summarise(inb = mean(inbreeding, ma.rm = TRUE)) |>
+  #pivot_wider(id_cols = year, names_from = "status", values_from = "NM") |>
+  ggplot(aes(x = year, y = inb, group = status)) + 
+  geom_line(aes(color = status)) + 
+  geom_point(aes(color = status)) +
+  theme_classic() + 
+  scale_x_continuous(limits = c(2009, 2017), breaks = seq(2009, 2017, 1))
+```
+```{r}
+naab_old <- read_csv("../../data/old_evals_clean.csv")
+```
+Number of sons per sire
+```{r}
+naab_old |>
+  filter(!is.na(sire_name)) |>
+  group_by(sire_name, status) |>
+  summarise(num_sons = n()) |>
+  arrange(desc(num_sons))
+```
+
+Number of sons per mgs
+```{r}
+naab_old |>
+  filter(!is.na(mgs_name)) |>
+  group_by(mgs_name) |>
+  summarise(num_sons = n()) |>
+  arrange(desc(num_sons))
+```
+Number of sires of genomic-tested bulls
+```{r}
+naab_old |>
+  filter(status == "G") |>
+  group_by(sire_name) |>
+  summarise(num_sons = n())  |>
+  arrange(desc(num_sons))
+```
+```{r}
+naab |>
+  filter(status == "G") |>
+  group_by(sire_id) |>
+  summarise(num_sons = n()) |>
+  arrange(desc(num_sons))
+```
+
+Number of daughters distribution
+```{r}
+naab_old |> 
+  filter(num_dtrs > 0) |>  
+  mutate(log_num_dtrs = log(num_dtrs)) |>
+  ggplot(aes(x = log_num_dtrs)) +
+  geom_density(color = "blue") + 
+  geom_histogram(aes(y = ..density..), bins = 60, fill = "grey", alpha = 0.45, color = "black") + 
+  theme_classic()
+```
+
+
+## Characterizing early adopters
+# Farm names 
+```{r}
+farm_names <- read_csv(paste0(folder, "/Box/WDE Results/bull_and_farm_names.csv"))
+farm_names |>
+  distinct(reg_id, .keep_all = TRUE) ->
+  farm_names
+
+naab_aiss <- left_join(naab_aiss, farm_names, by = join_by(reg_id == reg_id))
+naab_aiss |> 
+  select(-naab_code.y) |>
+  rename(naab_code = naab_code.x) ->
+  naab_aiss
+rm(cdn)
+```
+
+Inbreeding coefficient of early adopters
+```{r}
+eadopt <- naab_aiss |>
+  filter(status == "G" & yob < 2010) |>
+  group_by(reg_id) |>
+  arrange(period) |>
+  slice_head(n = 1) |>
+  ungroup()
+
+eadopt |>
+  group_by(yob) |>
+  summarise(mean = mean(inbreeding, na.rm = TRUE), 
+            max = max(inbreeding, na.rm = TRUE), 
+            min = min(inbreeding, na.rm = TRUE), 
+            N = n())
+```
+```{r}
+naab_aiss |>
+  group_by(reg_id) |>
+  arrange(period) |>
+  slice_head(n = 1) |>
+  ungroup() |> 
+  filter(yob > 2005 & !is.na(status)) |>
+  group_by(yob, status) |>
+  summarise(farm_name = n_distinct(farm_name, na.rm = TRUE)) |>
+  pivot_wider(id_cols = yob, names_from = "status", values_from = "farm_name")
+```
+
+
+# Marketing/stud codes
+```{r}
+companies <- read_csv("../../data/company_info.csv")
+```
+
+
+```{r}
+naab_aiss |>
+  group_by(reg_id) |>
+  arrange(period) |>
+  slice_head(n = 1) |>
+  ungroup() |> 
+  filter(yob > 2005 & !is.na(status)) |>
+  group_by(yob, status) |>
+  summarise(n_studs = n_distinct(primary_stud_code, na.rm = TRUE)) |>
+  pivot_wider(id_cols = yob, names_from = "status", values_from = "n_studs") ->
+  nstuds
+```
+```{r}
+kable(nstuds)
+```
+
+```{r}
+companies |>
+  mutate(date_1 = str_split(assigned, " ", simplify = TRUE)[,2],
+         date_2 = str_split(assigned, " ", simplify = TRUE)[,5]) |>
+  separate(date_1, into = c("assigned_date", "temp"), sep = ";") |>
+  select(-temp) |>
+  separate(date_2, into = c("end_date", "temp"), sep = ";") |>
+  select(-temp) |>
+  mutate(assigned_date = mdy(assigned_date),
+         end_date = mdy(end_date)) |>
+  select(-assigned) ->
+  companies
+```
+
+
+```{r}
+companies |> 
+ arrange(assigned_date) |> 
+  select(-c(notes, parent_company)) |> 
+  mutate(reg_year = year(assigned_date)) |>
+  group_by(reg_year) |>
+  summarise(N = n())
+```
+
+```{r}
+naab_aiss <- left_join(naab_aiss, companies, by = "primary_stud_code")
+```
+
+
+```{r}
+naab_aiss |>
+  mutate(reg_year = year(assigned_date)) |>
+  group_by(reg_id) |>
+  arrange(year_proof) |>
+  slice_head(n = 1) |>
+  ungroup() |>
+  filter(year_proof %in% 2009:2012 & !is.na(status)) |>
+  group_by(status, reg_year) |>
+  summarise(N = n()) |>
+  pivot_wider(id_cols = reg_year, names_from = "status", values_from = "N") |>
+  arrange(reg_year)
+```
+
+```{r}
+naab_aiss |>
+  mutate(parent_company = ifelse(is.na(parent_company), company_name, parent_company)) |>
+  group_by(reg_id) |>
+  arrange(year_proof) |>
+  slice_head(n = 1) |>
+  ungroup() |>
+  filter(year_proof > 2009 & year_proof < 2014 & !is.na(status)) |>
+  tab(year_proof, parent_company, status) |>
+  select(c(year_proof, parent_company, status, Freq.)) |>
+  pivot_wider(id_cols = c(year_proof, parent_company), names_from = "status", values_from = "Freq.") |>
+  data.frame()
+```
+
+```{r}
+naab_aiss |>
+  mutate(parent_company = ifelse(is.na(parent_company), company_name, parent_company)) |>
+  group_by(reg_id) |>
+  arrange(year_proof) |>
+  slice_head(n = 1) |>
+  ungroup() |>
+  group_by(parent_company) |>
+  summarise(min = min(year_proof)) |>
+  arrange(min)
+```
+
+Large vs. small firms: supports the intensive-margin hypothesis, large firms adopted G earlier and to a larger extent
+```{r, fig.height = 5, fig.width = 8, fig.align = "center"}
+naab_aiss |>
+  mutate(parent_company = ifelse(is.na(parent_company), company_name, parent_company),
+         company_size = ifelse(parent_company %in% c("Select Sires", "Semex Alliance", "ABS Global", "STgenetics",
+                                                     "Alta Genetics", "Genex", "CRV Holding"), "Large", "Small"),
+         company_date = ifelse(parent_company %in%  c("AA Breeders", "ABS Global", 
+                                                      "Alpenseme-Federazione Prov. Le Allevatori-Trento", 
+                                 "Alta Genetics", "Ambreez, NZ, Ltd.", "Androgenics", "CRV Holding", 
+                                 "Central Valley Dairy Breeders", "Cogent Breeding Ltd.", 
+                                 "Cooperative Agricole D'Insemination Artificielle de Crehen UNECO", "EastGen Inc.",
+                                 "Excelsior Farms", "Galaxie Genetics Reproductive Center, Inc.", "Genes Diffusion",
+                                 "Genex", "Golden State Breeders", "Hawkeye Breeders", "Hoffman A.I. Breeders", 
+                                 "Inseme SPA", "Interglobe Genetics", "JLG Enterprises", "KI Samen b.v.", 
+                                 "Livestock Improvement Corporation Ltd.", "Masterrind GmbH",  
+                                 "North American Breeders, Inc.", "Rocky Mountain Sire Services, Inc.", "STgenetics", 
+                                 "Select Sires", "Semex Alliance", "Southeastern Semen Services, Inc.", "Synetics",  
+                                 "Triple Crown Sires", "Universal Genetics Ltd.", "Urus", "WESTGEN",  
+                                 "Zimmerman's Custom Freezing", "['INTERMIZOO S.p.a.' 'INTERMIZOO S.p.A.']", 
+                                 "Centro Provinciale per la Fecondazione Artificiale", "Dependa-Bull Genetics",
+                                 "Genetic Connection", "Inseme, SPA", "VOST (Verein Ostfriesischer Stammviehzuchter e.G.",
+                                 "Belmont Breeders", "RBB (Rinderproduktion Berlin-Brandenburg GmbH)",  
+                                 "RPN (Rinderproduktion Niedersachsen Gmbh)", "RSA (Rinderzuchtverband Sachsen-Anhalt eG)", 
+                                 "RSH (Rinderzucht Schleswig-Holstein eG)", "RUW (Rinder-Union West e.G.)", 
+                                 "WEU (Weser-EMS-Union eG)", "C.O.F.A. (Cooperativa di Fecondazione Artificiale)", 
+                                 "Nederlandse Vereniging voor KI Kampen","Viking Genetics", 
+                                 "Union Regionale des Cooperaties d'Elevage de I'Ouest (URECO)", "Cogent Canada Corp.", 
+                                 "Swissgenetics/AI Center Muelligen", "CBS - Czech Breeding Services s.r.o.",
+                                 "Central Wisconsin Semen Freezing Service", "Rinderbesamungs-Genossenschaft Memmingen", 
+                                 "Shore Genetics, Inc.", "El Toro Genetics-Bill Hillier", "Global Ag Alliance, Inc.", 
+                                 "Natural SPOL-SRO", "Robert Bignami-Brentwood Farms",  
+                                 "Southern Idaho Reproductive Enterprises (S.I.R.E)", "CIA Alsace Genetique/UNECO", 
+                                 "CIA Mayenne UNECO", "Centro Tori Chiacchierini Di Chiacchierini Anna", 
+                                 "Flatness International, Inc.", "MIDA TEST", "Origenplus", "Xenetica Fontao S.A."), "existing", "new")) |>
+  group_by(reg_id) |>
+  arrange(year_proof) |>
+  slice_head(n = 1) |>
+  ungroup() |>
+  tab(company_size, company_date, year) |>
+  filter(year > 2000 & year <= 2020) |>
+  mutate(group = paste0(company_size, "-", company_date)) |>
+  ggplot(aes(x = year, y = Freq., group = group)) + 
+  geom_line(aes(color = group)) + 
+  geom_point(aes(color = group)) + 
+  theme_minimal() +
+  theme(legend.title = element_blank(),
+        legend.position = "bottom") +
+  geom_vline(xintercept =  2009, linetype = 2) +
+  scale_x_continuous(breaks = seq(2001, 2019, 3)) + 
+  xlab("Year") +
+  ylab("Number of new bulls released")
+```
+
+Active sires only: they do come from large-established firms!
+```{r}
+naab_aiss |>
+  mutate(parent_company = ifelse(is.na(parent_company), company_name, parent_company),
+         company_size = ifelse(parent_company %in% c("Select Sires", "Semex Alliance", "ABS Global", "STgenetics",
+                                                     "Alta Genetics", "Genex", "CRV Holding"), "large", "small"),
+         company_date = ifelse(parent_company %in%  c("AA Breeders", "ABS Global", 
+                                                      "Alpenseme-Federazione Prov. Le Allevatori-Trento", 
+                                 "Alta Genetics", "Ambreez, NZ, Ltd.", "Androgenics", "CRV Holding", 
+                                 "Central Valley Dairy Breeders", "Cogent Breeding Ltd.", 
+                                 "Cooperative Agricole D'Insemination Artificielle de Crehen UNECO", "EastGen Inc.",
+                                 "Excelsior Farms", "Galaxie Genetics Reproductive Center, Inc.", "Genes Diffusion",
+                                 "Genex", "Golden State Breeders", "Hawkeye Breeders", "Hoffman A.I. Breeders", 
+                                 "Inseme SPA", "Interglobe Genetics", "JLG Enterprises", "KI Samen b.v.", 
+                                 "Livestock Improvement Corporation Ltd.", "Masterrind GmbH",  
+                                 "North American Breeders, Inc.", "Rocky Mountain Sire Services, Inc.", "STgenetics", 
+                                 "Select Sires", "Semex Alliance", "Southeastern Semen Services, Inc.", "Synetics",  
+                                 "Triple Crown Sires", "Universal Genetics Ltd.", "Urus", "WESTGEN",  
+                                 "Zimmerman's Custom Freezing", "['INTERMIZOO S.p.a.' 'INTERMIZOO S.p.A.']", 
+                                 "Centro Provinciale per la Fecondazione Artificiale", "Dependa-Bull Genetics",
+                                 "Genetic Connection", "Inseme, SPA", "VOST (Verein Ostfriesischer Stammviehzuchter e.G.",
+                                 "Belmont Breeders", "RBB (Rinderproduktion Berlin-Brandenburg GmbH)",  
+                                 "RPN (Rinderproduktion Niedersachsen Gmbh)", "RSA (Rinderzuchtverband Sachsen-Anhalt eG)", 
+                                 "RSH (Rinderzucht Schleswig-Holstein eG)", "RUW (Rinder-Union West e.G.)", 
+                                 "WEU (Weser-EMS-Union eG)", "C.O.F.A. (Cooperativa di Fecondazione Artificiale)", 
+                                 "Nederlandse Vereniging voor KI Kampen","Viking Genetics", 
+                                 "Union Regionale des Cooperaties d'Elevage de I'Ouest (URECO)", "Cogent Canada Corp.", 
+                                 "Swissgenetics/AI Center Muelligen", "CBS - Czech Breeding Services s.r.o.",
+                                 "Central Wisconsin Semen Freezing Service", "Rinderbesamungs-Genossenschaft Memmingen", 
+                                 "Shore Genetics, Inc.", "El Toro Genetics-Bill Hillier", "Global Ag Alliance, Inc.", 
+                                 "Natural SPOL-SRO", "Robert Bignami-Brentwood Farms",  
+                                 "Southern Idaho Reproductive Enterprises (S.I.R.E)", "CIA Alsace Genetique/UNECO", 
+                                 "CIA Mayenne UNECO", "Centro Tori Chiacchierini Di Chiacchierini Anna", 
+                                 "Flatness International, Inc.", "MIDA TEST", "Origenplus", "Xenetica Fontao S.A."), "existing", "new")) |>
+  group_by(reg_id) |>
+  arrange(year_proof) |>
+  slice_head(n = 1) |>
+  ungroup() |>
+  filter(status == "A") |>
+  tab(company_size, company_date, year) |>
+  filter(year > 2000 & year < 2019) |>
+  mutate(group = paste0(company_size, "-", company_date)) |>
+  ggplot(aes(x = year, y = Freq., group = group)) + 
+  geom_line(aes(color = group)) + 
+  geom_point(aes(color = group)) + 
+  theme_classic()
+```
+
+Genomic sires only
+```{r}
+naab_aiss |>
+  mutate(parent_company = ifelse(is.na(parent_company), company_name, parent_company),
+         company_size = ifelse(parent_company %in% c("Select Sires", "Semex Alliance", "ABS Global", "STgenetics",
+                                                     "Alta Genetics", "Genex", "CRV Holding"), "large", "small"),
+         company_date = ifelse(parent_company %in%  c("AA Breeders", "ABS Global", 
+                                                      "Alpenseme-Federazione Prov. Le Allevatori-Trento", 
+                                 "Alta Genetics", "Ambreez, NZ, Ltd.", "Androgenics", "CRV Holding", 
+                                 "Central Valley Dairy Breeders", "Cogent Breeding Ltd.", 
+                                 "Cooperative Agricole D'Insemination Artificielle de Crehen UNECO", "EastGen Inc.",
+                                 "Excelsior Farms", "Galaxie Genetics Reproductive Center, Inc.", "Genes Diffusion",
+                                 "Genex", "Golden State Breeders", "Hawkeye Breeders", "Hoffman A.I. Breeders", 
+                                 "Inseme SPA", "Interglobe Genetics", "JLG Enterprises", "KI Samen b.v.", 
+                                 "Livestock Improvement Corporation Ltd.", "Masterrind GmbH",  
+                                 "North American Breeders, Inc.", "Rocky Mountain Sire Services, Inc.", "STgenetics", 
+                                 "Select Sires", "Semex Alliance", "Southeastern Semen Services, Inc.", "Synetics",  
+                                 "Triple Crown Sires", "Universal Genetics Ltd.", "Urus", "WESTGEN",  
+                                 "Zimmerman's Custom Freezing", "['INTERMIZOO S.p.a.' 'INTERMIZOO S.p.A.']", 
+                                 "Centro Provinciale per la Fecondazione Artificiale", "Dependa-Bull Genetics",
+                                 "Genetic Connection", "Inseme, SPA", "VOST (Verein Ostfriesischer Stammviehzuchter e.G.",
+                                 "Belmont Breeders", "RBB (Rinderproduktion Berlin-Brandenburg GmbH)",  
+                                 "RPN (Rinderproduktion Niedersachsen Gmbh)", "RSA (Rinderzuchtverband Sachsen-Anhalt eG)", 
+                                 "RSH (Rinderzucht Schleswig-Holstein eG)", "RUW (Rinder-Union West e.G.)", 
+                                 "WEU (Weser-EMS-Union eG)", "C.O.F.A. (Cooperativa di Fecondazione Artificiale)", 
+                                 "Nederlandse Vereniging voor KI Kampen","Viking Genetics", 
+                                 "Union Regionale des Cooperaties d'Elevage de I'Ouest (URECO)", "Cogent Canada Corp.", 
+                                 "Swissgenetics/AI Center Muelligen", "CBS - Czech Breeding Services s.r.o.",
+                                 "Central Wisconsin Semen Freezing Service", "Rinderbesamungs-Genossenschaft Memmingen", 
+                                 "Shore Genetics, Inc.", "El Toro Genetics-Bill Hillier", "Global Ag Alliance, Inc.", 
+                                 "Natural SPOL-SRO", "Robert Bignami-Brentwood Farms",  
+                                 "Southern Idaho Reproductive Enterprises (S.I.R.E)", "CIA Alsace Genetique/UNECO", 
+                                 "CIA Mayenne UNECO", "Centro Tori Chiacchierini Di Chiacchierini Anna", 
+                                 "Flatness International, Inc.", "MIDA TEST", "Origenplus", "Xenetica Fontao S.A."), "existing", "new")) |>
+  group_by(reg_id) |>
+  arrange(year_proof) |>
+  slice_head(n = 1) |>
+  ungroup() |>
+  filter(status == "G") |>
+  tab(company_size, company_date, year) |>
+  filter(year > 2000 & year < 2019) |>
+  mutate(group = paste0(company_size, "-", company_date)) |>
+  ggplot(aes(x = year, y = Freq., group = group)) + 
+  geom_line(aes(color = group)) + 
+  geom_point(aes(color = group)) + 
+  theme_classic()
+```
+
+
+```{r}
+naab_aiss |>
+  mutate(parent_company = ifelse(is.na(parent_company), company_name, parent_company),
+         company_size = ifelse(parent_company %in% c("Select Sires", "Semex Alliance", "ABS Global", "STgenetics",
+                                                     "Alta Genetics", "Genex", "CRV Holding"), "large", "small"),
+         company_date = ifelse(parent_company %in%  c("AA Breeders", "ABS Global", 
+                                                      "Alpenseme-Federazione Prov. Le Allevatori-Trento", 
+                                 "Alta Genetics", "Ambreez, NZ, Ltd.", "Androgenics", "CRV Holding", 
+                                 "Central Valley Dairy Breeders", "Cogent Breeding Ltd.", 
+                                 "Cooperative Agricole D'Insemination Artificielle de Crehen UNECO", "EastGen Inc.",
+                                 "Excelsior Farms", "Galaxie Genetics Reproductive Center, Inc.", "Genes Diffusion",
+                                 "Genex", "Golden State Breeders", "Hawkeye Breeders", "Hoffman A.I. Breeders", 
+                                 "Inseme SPA", "Interglobe Genetics", "JLG Enterprises", "KI Samen b.v.", 
+                                 "Livestock Improvement Corporation Ltd.", "Masterrind GmbH",  
+                                 "North American Breeders, Inc.", "Rocky Mountain Sire Services, Inc.", "STgenetics", 
+                                 "Select Sires", "Semex Alliance", "Southeastern Semen Services, Inc.", "Synetics",  
+                                 "Triple Crown Sires", "Universal Genetics Ltd.", "Urus", "WESTGEN",  
+                                 "Zimmerman's Custom Freezing", "['INTERMIZOO S.p.a.' 'INTERMIZOO S.p.A.']", 
+                                 "Centro Provinciale per la Fecondazione Artificiale", "Dependa-Bull Genetics",
+                                 "Genetic Connection", "Inseme, SPA", "VOST (Verein Ostfriesischer Stammviehzuchter e.G.",
+                                 "Belmont Breeders", "RBB (Rinderproduktion Berlin-Brandenburg GmbH)",  
+                                 "RPN (Rinderproduktion Niedersachsen Gmbh)", "RSA (Rinderzuchtverband Sachsen-Anhalt eG)", 
+                                 "RSH (Rinderzucht Schleswig-Holstein eG)", "RUW (Rinder-Union West e.G.)", 
+                                 "WEU (Weser-EMS-Union eG)", "C.O.F.A. (Cooperativa di Fecondazione Artificiale)", 
+                                 "Nederlandse Vereniging voor KI Kampen","Viking Genetics", 
+                                 "Union Regionale des Cooperaties d'Elevage de I'Ouest (URECO)", "Cogent Canada Corp.", 
+                                 "Swissgenetics/AI Center Muelligen", "CBS - Czech Breeding Services s.r.o.",
+                                 "Central Wisconsin Semen Freezing Service", "Rinderbesamungs-Genossenschaft Memmingen", 
+                                 "Shore Genetics, Inc.", "El Toro Genetics-Bill Hillier", "Global Ag Alliance, Inc.", 
+                                 "Natural SPOL-SRO", "Robert Bignami-Brentwood Farms",  
+                                 "Southern Idaho Reproductive Enterprises (S.I.R.E)", "CIA Alsace Genetique/UNECO", 
+                                 "CIA Mayenne UNECO", "Centro Tori Chiacchierini Di Chiacchierini Anna", 
+                                 "Flatness International, Inc.", "MIDA TEST", "Origenplus", "Xenetica Fontao S.A."), "existing", "new")) |>
+  group_by(reg_id) |>
+  arrange(year_proof) |>
+  slice_tail(n = 1) |>
+  ungroup() |>
+  #filter(year_proof < 2019) |>
+  group_by(year_proof, company_size) |>
+  summarise(pta_milk = mean(pta_milk, na.rm = TRUE)) |>
+  ggplot(aes(x = year_proof, y = pta_milk)) + 
+  geom_point(aes(color = company_size)) + 
+  geom_line(aes(color = company_size)) + 
+  theme_classic() + 
+  geom_vline(xintercept =  2009, linetype = 2) +  
+  xlab("Year of first proof") + 
+  ylab("Average Milk yield PTA") + 
+  scale_x_continuous(breaks = seq(2000, 2020, 5))
+```
+
+
+Number of firms per year
+```{r, fig.height = 5, fig.width = 8, fig.align = "center"}
+naab_aiss |>
+  filter(status %in% c("A", "G")) |>
+  mutate(parent_company = ifelse(is.na(parent_company), company_name, parent_company))  |>
+  group_by(reg_id) |>
+  arrange(year_proof) |>
+  slice_head(n = 1) |>
+  ungroup() |>
+  group_by(year, parent_company) |>
+  slice_head(n = 1) |>
+  ungroup() |>
+  group_by(year) |>
+  mutate(num_firms = 1:n()) |>
+  slice_tail(n = 1) |>
+  select(year, num_firms) |>
+  filter(year < 2019) |>
+  ggplot(aes(x = year, y = num_firms)) + 
+  geom_line() + 
+  geom_point() + 
+  geom_smooth(se = FALSE, color = "lightblue") +
+  geom_vline(xintercept = 2009, color = "red", linetype = 2) +
+  theme_classic()
+```
+
+Numbers of animals per firm and year explodes after GT is introduced!
+```{r, fig.height = 5, fig.width = 8, fig.align = "center"}
+naab_aiss |>
+  mutate(parent_company = ifelse(is.na(parent_company), company_name, parent_company)) |>
+  group_by(parent_company, year) |>
+  mutate(num_bulls = 1:n()) |>
+  slice_tail(n = 1) |>
+  select(c(year, parent_company, num_bulls)) |>
+  ungroup() |>
+  filter(parent_company %in% c("ABS Global", "Genex", "Select Sires", 
+                               "Semex Alliance", "STgenetics", "Alta Genetics") &
+           year > 2000 & year < 2021) |>
+  ggplot(aes(x = year, y = num_bulls, group = parent_company)) + 
+  geom_line(aes(color = parent_company)) + 
+  geom_point(aes(color = parent_company)) +
+  geom_vline(xintercept = 2009, color = "black", linetype = 2) +
+  theme_minimal() +
+  scale_x_continuous(breaks = seq(2001, 2019, 3)) + 
+  theme(legend.title = element_blank(),
+        legend.position = "bottom") +
+  xlab("Year") + ylab("Number of new bulls released")
+```
+
+But smaller firms do not increase the number of bulls so much
+```{r, fig.height = 5, fig.width = 8, fig.align = "center"}
+naab_aiss |>
+  mutate(parent_company = ifelse(is.na(parent_company), company_name, parent_company)) |>
+  group_by(parent_company, year) |>
+  mutate(num_bulls = 1:n()) |>
+  slice_tail(n = 1) |>
+  select(c(year, parent_company, num_bulls)) |>
+  ungroup() |>
+  filter(parent_company %in% c("Hawkeye Breeders", "International Protein Sires", "JLG Enterprises", 
+                               "Jetstream Genetics", "Synetics", "Viking Genetics") &
+           year < 2021) |>
+  ggplot(aes(x = year, y = num_bulls, group = parent_company)) + 
+  geom_line(aes(color = parent_company)) + 
+  geom_point(aes(color = parent_company)) +
+  geom_vline(xintercept = 2009, color = "black", linetype = 2) +
+  theme_minimal() +
+  scale_x_continuous(breaks = seq(2001, 2019, 3)) + 
+  theme(legend.title = element_blank(),
+        legend.position = "bottom") +
+  xlab("Year") + ylab("Number of new bulls released")
+```
+
+```{r, fig.height = 5, fig.width = 8, fig.align = "center"}
+naab_aiss |>
+  mutate(parent_company = ifelse(is.na(parent_company), company_name, parent_company),
+         size = case_when(
+           parent_company %in% c("ABS Global", "Genex", "Select Sires", 
+                               "Semex Alliance", "STgenetics", "Alta Genetics") ~ "Large companies",
+           parent_company %in% c("Hawkeye Breeders", "International Protein Sires", "JLG Enterprises", 
+                               "Jetstream Genetics", "Synetics", "Viking Genetics") ~ "Small companies")) |>
+  filter(!is.na(size) & year < 2021) |>
+  group_by(size, parent_company, year) |>
+  mutate(num_bulls = 1:n()) |>
+  slice_tail(n = 1) |>
+  select(c(year, parent_company, num_bulls)) |>
+  ungroup() |>
+  ggplot(aes(x = year, y = num_bulls, group = parent_company)) + 
+  geom_line(aes(color = parent_company)) + 
+  geom_point(aes(color = parent_company)) +
+  geom_vline(xintercept = 2009, color = "black", linetype = 2) +
+  theme_classic() +
+  theme(legend.title = element_blank(),
+        legend.position = "bottom") +
+  xlab("Year") + ylab("Number of new bulls released") +
+  facet_wrap(.~size, scales = "free_y")
+```
+
+
+
+```{r}
+naab_aiss |>
+  group_by(reg_id) |>
+  slice_max(order_by = semen_price, n = 1, na_rm = TRUE, with_ties = FALSE) |>
+  ungroup() |>
+  filter(!is.na(status)) |>
+  group_by(period, status) |>
+  summarise(semen_price = mean(semen_price, na.rm = TRUE)) |>
+  filter(period > as.Date("2009-01-01") & period < as.Date("2015-01-01")) |>
+  #pivot_wider(id_cols = period, names_from = "status", values_from = "semen_price") |>
+  ggplot(aes(x = period, y = semen_price, group = status)) + 
+  geom_line(aes(color = status)) + 
+  geom_point(aes(color = status)) +
+  theme_classic()
+```
+
+```{r}
+naab_aiss |>
+  group_by(reg_id) |>
+  arrange(period) |>
+  slice_max(order_by = semen_price, n = 1, na_rm = TRUE, with_ties = FALSE) |>
+  ungroup() |>
+  filter(!is.na(status)) |>
+  group_by(period, status) |>
+  summarise(price_obs = n()) |>
+  filter(period > as.Date("2009-01-01") & period < as.Date("2016-01-01")) |>
+  #pivot_wider(id_cols = period, names_from = "status", values_from = "semen_price") |>
+  ggplot(aes(x = period, y = price_obs, group = status)) + 
+  geom_line(aes(color = status)) + 
+  geom_point(aes(color = status)) +
+  theme_classic()
+```
+
+Bulls vs Sires PTAs
+```{r}
+naab_sires <- left_join(naab[, c("reg_id", "sire_id")],
+                        naab_old[, c("reg_id", "status", "pta_fat_lb","pta_protein_lb", "pta_milk",
+                                      "pta_scs", "pta_pl", "pta_dpr", "pta_hcr", "pta_ccr",
+                                      "pta_liv", "pta_type", "pta_gest_length", "pta_heifer_liv",
+                                      "pta_ketosis", "pta_efcalving", "pta_r_placenta",
+                                      "pta_rear_legs_rear", "pta_foot_leg_score")],
+                        by = join_by(sire_id == reg_id))
+
+naab_sires |>
+  filter(!is.na(status)) ->
+  naab_sires
+```
+
+
+```{r}
+naab_aiss |>
+  group_by(reg_id) |>
+  arrange(period) |>
+  slice_tail(n = 1) |>
+  ungroup() ->
+naab_unique
+
+naab_unique <- left_join(naab_unique, 
+                         naab_sires, 
+                          by = "reg_id")
+
+naab_unique |>
+  rename(status = status.x,
+         status_sire = status.y,
+         pta_milk = pta_milk.x,
+         pta_milk_sire = pta_milk.y,
+         pta_fat_lb = pta_fat_lb.x,
+         pta_fat_lb_sire = pta_fat_lb.y,
+         pta_protein_lb = pta_protein_lb.x,
+         pta_protein_lb_sire = pta_protein_lb.y,
+         pta_scs = pta_scs.x,
+         pta_scs_sire = pta_scs.y,
+         pta_pl = pta_pl.x,
+         pta_pl_sire = pta_pl.y,
+         pta_dpr = pta_dpr.x,
+         pta_dpr_sire = pta_dpr.y,
+         pta_hcr = pta_hcr.x,
+         pta_hcr_sire = pta_hcr.y,
+         pta_ccr = pta_ccr.x,
+         pta_ccr_sire = pta_ccr.y,
+         pta_liv = pta_liv.x,
+         pta_liv_sire = pta_liv.y,
+         pta_type = pta_type.x,
+         pta_type_sire = pta_type.y,
+         pta_rear_legs_rear = pta_rear_legs_rear.x,
+         pta_rear_legs_rear_sire = pta_rear_legs_rear.y,
+         pta_foot_leg_score = pta_foot_leg_score.x,
+         pta_foot_leg_score_sire = pta_foot_leg_score.y,
+         pta_gest_length = pta_gest_length.x,
+         pta_gest_length_sire = pta_gest_length.y,
+         pta_ketosis = pta_ketosis.x,
+         pta_ketosis_sire = pta_ketosis.y) ->
+  naab_unique
+rm(naab_sires)
+```
+
+```{r, fig.height = 5, fig.width = 8, fig.align = "center"}
+naab_unique |>
+  filter(!is.na(status)) |>
+  ggplot(aes(x = pta_milk_sire, y = pta_milk)) + 
+  geom_jitter(aes(color = status)) + 
+  geom_smooth(color = "black") + 
+  geom_abline(slope = 1, intercept = 0) +
+  theme_classic() +
+  xlab("Sire milk PTA") + ylab("PTA Milk")
+```
+
+```{r, fig.height = 5, fig.width = 8, fig.align = "center"}
+naab_unique |>
+  filter(!is.na(status)) |>
+  ggplot(aes(x = pta_pl_sire, y = pta_pl)) + 
+  geom_jitter(aes(color = status)) + 
+  geom_smooth(color = "black") + 
+  geom_abline(slope = 1, intercept = 0) +
+  theme_classic() +
+  xlab("Sire Productive Life PTA") + ylab("Productive Life PTA")
+```
+
+```{r, fig.height = 5, fig.width = 8, fig.align = "center"}
+naab_unique |>
+  filter(!is.na(status)) |>
+  ggplot(aes(x = pta_type_sire, y = pta_type)) + 
+  geom_jitter(aes(color = status)) + 
+  geom_smooth(color = "black") + 
+  geom_abline(slope = 1, intercept = 0) +
+  theme_classic() +
+  xlab("Sire Type PTA") + ylab("Type PTA")
+```
+```{r}
+naab_unique |>
+  select(c("reg_id", "pta_milk", "pta_fat_lb", "pta_protein_lb", "pta_scs", 
+           "pta_pl", "pta_dpr",  "pta_hcr", "pta_ccr", "pta_liv", "pta_type",  
+           "pta_gest_length", "pta_ketosis")) |>
+  pivot_longer(cols = -reg_id,  names_to = "vars", values_to = "vals") ->
+  bulls
+
+naab_unique |>
+  select(c("reg_id", "pta_milk_sire" , "pta_fat_lb_sire", "pta_protein_lb_sire", 
+           "pta_scs_sire", "pta_pl_sire", "pta_dpr_sire", "pta_hcr_sire", 
+           "pta_ccr_sire", "pta_liv_sire", "pta_type_sire", 
+           "pta_gest_length_sire", "pta_ketosis_sire")) |>
+  rename(pta_milk = pta_milk_sire,
+         pta_fat_lb = pta_fat_lb_sire,
+         pta_protein_lb = pta_protein_lb_sire,
+         pta_scs = pta_scs_sire,
+         pta_pl = pta_pl_sire,
+         pta_dpr = pta_dpr_sire,
+         pta_hcr = pta_hcr_sire,
+         pta_ccr = pta_ccr_sire,
+         pta_liv = pta_liv_sire,
+         pta_type = pta_type_sire,
+         pta_gest_length = pta_gest_length_sire,
+         pta_ketosis = pta_ketosis_sire) |>  
+  pivot_longer(cols = -reg_id, names_to = "vars", values_to = "vals_sire") ->
+  sires
+
+bulls <- left_join(bulls, sires, by = c("reg_id", "vars"))
+
+bulls |> 
+  filter(!is.na(vals) & !is.na(vals_sire)) ->
+  bulls
+rm(sires)
+```
+```{r}
+bulls_reg <- group_split(bulls, vars)
+results <- map_dfr(bulls_reg, function(x) tidy(lm(vals ~ vals_sire, data = x)))
+results |>
+  filter(term != "(Intercept)") ->
+  results
+
+results$term <-  c("pta_ccr", "pta_dpr", "pta_fat_lb", "pta_gest_length", 
+                   "pta_hcr", "pta_ketosis", "pta_liv", "pta_milk", "pta_pl",
+                   "pta_protein_lb", "pta_scs", "pta_type")
+results |>
+  data.frame()
+```
+
+
+```{r}
+naab_unique |>
+  filter(!is.na(status)) |>
+  mutate(diff_pta_milk = pta_milk - 0.5*pta_milk_sire) |>
+  group_by(yob, status) |>
+  summarise(diff_pta_milk = mean(diff_pta_milk, na.rm = TRUE)) |>
+  filter(yob > 2000) |>
+  ggplot(aes(x = yob, y = diff_pta_milk)) + 
+  geom_line(aes(color = status)) +
+  theme_classic()
+```
+
+```{r}
+naab_unique |>
+  filter(!is.na(status)) |>
+  mutate(diff_pta_fat_lb = pta_fat_lb - 0.5*pta_fat_lb_sire) |>
+  group_by(yob, status) |>
+  summarise(diff_pta_fat_lb = mean(diff_pta_fat_lb, na.rm = TRUE)) |>
+  filter(yob > 2000) |>
+  ggplot(aes(x = yob, y = diff_pta_fat_lb)) + 
+  geom_line(aes(color = status)) +
+  theme_classic()
+```
+
+Number of daughters 
+```{r}
+naab_unique |>
+  rename(sire_id = sire_id.y) |>
+  select(-sire_id.x) ->
+  naab_unique
+```
+
+```{r}
+naab_unique <- left_join(naab_unique, naab_old[, c("reg_id", "num_dtrs")],
+                          by = join_by(sire_id == reg_id))
+```
+
+```{r}
+naab_unique |>
+  filter(!is.na(status)) |>
+  group_by(year, status) |>
+  summarise(num_dtrs = mean(num_dtrs, na.rm = TRUE)) |>
+  ggplot(aes(x = year, y = num_dtrs, group = status)) + 
+  geom_line(aes(color = status)) + 
+  geom_point(aes(color = status)) +
+  theme_classic()
+```
+Defining superstars
+```{r}
+connections <- naab[, c('reg_id', 'sire_id')] |>
+  distinct(reg_id, .keep_all = TRUE)
+names(connections) <- c("reg_id", "sire_id_g0")
+connect <- naab[, c('reg_id', 'sire_id')] |>
+  distinct(reg_id, .keep_all = TRUE)
+
+cnt = 1
+ix = 0
+
+while(cnt != 0){
+  connect_temp <- connect
+  names(connect_temp) <- c(paste0('sire_id_g', as.character(ix)), paste0('sire_id_g', as.character(ix+1)))
+  connections <- left_join(connections, connect_temp, by = paste0('sire_id_g', as.character(ix)))
+  ix <- ix + 1
+  cnt <- table(connections[, paste0('sire_id_g', as.character(ix))]) |>
+    dim()
+  print(cnt)
+  rm(connect_temp)
+}
+
+connections <- connections[, -18]
+rm(connect)
+```
+```{r}
+connections <- left_join(connections, naab[, c("reg_id", "status")], by = "reg_id")
+```
+
+Pedigree of bulls
+```{r}
+connections |>
+  select(-status) |>
+  pivot_longer(sire_id_g0:sire_id_g15, names_to = "generation", values_to = "sire_id") |>
+  filter(!is.na(sire_id)) |>
+  separate(generation, into = c("type", "id", "gen"), sep = "_") |>
+  select(-c(type, id)) |>
+  separate(gen, into = c("g_var", "gen_num"), sep = 1) |>
+  select(-g_var) %>%
+  mutate(gen_num = as.numeric(gen_num)+1) ->
+  pedigree
+```
+
+```{r, include = FALSE}
+son_counts <- pedigree |> 
+  tab(sire_id) |>
+  select(c(sire_id, Freq.)) |>
+  rename(num_sons = Freq.) |>
+  data.frame() |>
+  arrange(desc(num_sons))
+```
+
+```{r}
+son_counts <- left_join(son_counts, naab[, c("reg_id", "reg_name", "yob", "status")], by = join_by(sire_id == reg_id))
+
+son_counts |>
+  distinct(sire_id, .keep_all = TRUE) ->
+  son_counts
+
+son_counts |>
+  mutate(reg_name = replace(reg_name, sire_id == "HOUSA000000819476", "Weber Burke Cyclone"),
+         reg_name = replace(reg_name, sire_id == "HOCAN000000260753", "Rosafe Pearl Hannibal"),
+         yob = replace(yob, sire_id == "HOCAN000000260753", 1953),
+         reg_name = replace(reg_name, sire_id == "JEUSA000000488392", "Jester Standard Advancer"),
+         reg_name = replace(reg_name, sire_id == "JEUSA000000399447", "Welcome Volunteer"),
+         yob = replace(yob, sire_id == "JEUSA000000399447", 1942),
+         reg_name = replace(reg_name, sire_id == "BSUSA000000090827", "Royal's Meridian of Lee's Hill"),
+         yob = replace(yob, sire_id == "BSUSA000000090827", 1947),
+         reg_name = replace(reg_name, sire_id == "BSUSA000000071151", "The Laird of Lee's Hill"),
+         yob = replace(yob, sire_id == "BSUSA000000071151", 1945),
+         reg_name = replace(reg_name, sire_id == "GUUSA000000470256", "Lyrene CH Wistar"),
+         yob = replace(yob, sire_id == "GUUSA000000470256", 1950),
+         reg_name = replace(reg_name, sire_id == "GUUSA000000458786", "Coldsprings B R Forcaster"),
+         reg_name = replace(reg_name, sire_id == "JEDNK000000003951", "Brutus Syd"),
+         yob = replace(yob, sire_id == "JEDNK000000003951", 1966),
+         reg_name = replace(reg_name, sire_id == "AYUSA000000091883", "Balig Bruno Imp"),
+         yob = replace(yob, sire_id == "AYUSA000000091883", 1947),
+         reg_name = replace(reg_name, sire_id == "HOCAN000012532129", "Westcoast Fascinator"),
+         yob = replace(yob, sire_id == "HOCAN000012532129", 2016),
+         reg_name = replace(reg_name, sire_id == "AYCAN000109186197", "Guimond Yale-ET"),
+         yob = replace(yob, sire_id == "AYCAN000109186197", 2015),
+         reg_name = replace(reg_name, sire_id == "BSCHE120079480359", "Vetsch's Nesta Calvin-ET"),
+         yob = replace(yob, sire_id == "BSCHE120079480359", 2009),
+         reg_name = replace(reg_name, sire_id == "HOUSA000072102057", "Brandvale Stoic Damien-E"),
+         yob = replace(yob, sire_id == "HOUSA000072102057", 2014),
+         reg_name = replace(reg_name, sire_id == "AYCAN000105776780", "Chaluka Virgile-ET"),
+         yob = replace(yob, sire_id == "AYCAN000105776780", 2009),
+         reg_name = replace(reg_name, sire_id == "AYCAN000106853885", "Kellcrest Riesling"),
+         yob = replace(yob, sire_id == "AYCAN000106853885", 2010),
+         reg_name = replace(reg_name, sire_id == "AYCAN000109734076", "Cock Rond Imagine"),
+         yob = replace(yob, sire_id == "AYCAN000109734076", 2016),
+         reg_name = replace(reg_name, sire_id == "AYUSA000000111157", "Selwood Cora's Burton"),
+         yob = replace(yob, sire_id == "AYUSA000000111157", 1949),
+         reg_name = replace(reg_name, sire_id == "AYUSA000000111157", "Selwood Cora's Burton"),
+         yob = replace(yob, sire_id == "AYUSA000000111157", 1949),
+         reg_name = replace(reg_name, sire_id == "BSCHE120119702885", "Lennox"),
+         yob = replace(yob, sire_id == "BSCHE120119702885", 2015),
+         reg_name = replace(reg_name, sire_id == "GUUSA000097001421", "Walnut Ridge Prince Charming"),
+         reg_name = replace(reg_name, sire_id == "HOCAN000012529310", "Progenesis Padawan"),
+         yob = replace(yob, sire_id == "HOCAN000012529310", 2016),
+         reg_name = replace(reg_name, sire_id == "HODEU000539675034", "Hotspot P"),
+         yob = replace(yob, sire_id == "HODEU000539675034", 2017),
+         reg_name = replace(reg_name, sire_id == "HONLD000754797988", "Delta Leader P"),
+         yob = replace(yob, sire_id == "HONLD000754797988", 2016),
+         reg_name = replace(reg_name, sire_id == "HOUSA000142925043", "Mr Sunrose Saturn"),
+         yob = replace(yob, sire_id == "HOUSA000142925043", 2013),
+         reg_name = replace(reg_name, sire_id == "JEDNK000000303812", "VJ Fihl Husky Hihl"),
+         yob = replace(yob, sire_id == "JEDNK000000303812", 2012),
+         reg_name = replace(reg_name, sire_id == "JEDNK000000304129", "VJ Dongsgaarden Husky haley"),
+         yob = replace(yob, sire_id == "JEDNK000000304129", 2015),
+         reg_name = replace(reg_name, sire_id == "JEDNK000000304223", "VJ Lobo"),
+         yob = replace(yob, sire_id == "JEDNK000000304223", 2015),
+         reg_name = replace(reg_name, sire_id == "JEDNK000000304229", "ISDK VJ Mosegaard Hilario Haare"),
+         yob = replace(yob, sire_id == "JEDNK000000304229", 2015),
+         reg_name = replace(reg_name, sire_id == "JEUSA000000486937", "Brampton W R Lord Clair"),
+         yob = replace(yob, sire_id == "JEUSA000000486937", 1945)) ->
+  son_counts
+```
+
+```{r}
+pctile(naab_old$num_dtrs, probs = seq(0, 10, 1)/10, na.rm = TRUE)
+naab_old |>
+  mutate(superstar = ifelse(num_dtrs > 3300, 1, 0)) ->
+  naab_old
+```
+
+```{r}
+naab_old |>
+  filter(superstar == 1) |>
+  select(reg_id) -> 
+  superstars
+
+pedigree |>
+  mutate(superstar = ifelse(sire_id %in% superstars$reg_id, 1, 0),
+         weight = 2^(-(gen_num+1))) ->
+  pedigree
+```
+
+Genomic tested bulls are NOT more related to "superstars" than active bulls!
+
+1) Define superstars by number of daughters
+```{r}
+pedigree |> 
+  group_by(reg_id) |> 
+  summarise(score = sum(weight*superstar)) ->
+  scores
+
+scores <- left_join(scores, naab_old[, c("reg_id", "status", "yob")], by = "reg_id")
+scores <- left_join(scores, naab_unique[, c("reg_id", "status", "yob")], by = "reg_id")
+
+scores |>
+  mutate(status = ifelse(is.na(status.y), status.x, status.y),
+         yob = ifelse(is.na(yob.y), yob.x, yob.y)) |>
+  select(-c(status.x, status.y, yob.x, yob.y)) ->
+  scores
+
+
+scores |>
+  filter(!is.na(status)) |>
+  group_by(status) |>
+  summarise(score_sum = sum(score, na.rm = TRUE),
+            score_mean = mean(score, na.rm = TRUE),
+            N = n())
+
+```
+
+**Problem**: `num_dtrs` is available only for active sires, and its weight decreases after 2015.
+```{r}
+scores |>
+  filter(status %in% c("A", "G", "I") & yob > 1999 & yob < 2020) |>
+  group_by(status, yob) |>
+  summarise(score_mean = mean(score, na.rm = TRUE)) |>
+  ggplot(aes(x = yob, y = score_mean, group = status)) +
+  geom_line(aes(color = status)) + 
+  geom_point(aes(color = status)) +
+  geom_hline(yintercept = 0.5, color = "black", linetype  = 2) +
+  theme_classic()
+```
+
+2) Define "superstars" by the number of (observed) sons, in this case `G` bulls are more related to superstars than `A` bulls!
+```{r}
+pedigree |>
+  mutate(superstar_alt = ifelse(sire_id %in% son_counts$sire_id, 1, 0)) ->
+  pedigree
+
+pedigree |> 
+  group_by(reg_id) |> 
+  summarise(score_alt = sum(weight*superstar_alt)) ->
+  scores_alt
+
+scores_alt <- left_join(scores_alt, naab_old[, c("reg_id", "status", "yob")], by = "reg_id")
+scores_alt <- left_join(scores_alt, naab_unique[, c("reg_id", "status", "yob")], by = "reg_id")
+
+scores_alt |>
+  mutate(status = ifelse(is.na(status.y), status.x, status.y),
+         yob = ifelse(is.na(yob.y), yob.x, yob.y)) |>
+  select(-c(status.x, status.y, yob.x, yob.y)) ->
+  scores_alt
+
+
+scores_alt |>
+  filter(!is.na(status)) |>
+  group_by(status) |>
+  summarise(score_sum = sum(score_alt, na.rm = TRUE),
+            score_mean = mean(score_alt, na.rm = TRUE),
+            N = n())
+
+```
+
+But the proportion of relatedness is variable in time
+```{r}
+scores_alt |>
+  filter(status %in% c("A", "G", "F", "I") & yob > 1999 & yob < 2019) |>
+  group_by(status, yob) |>
+  summarise(score_mean = mean(score_alt, na.rm = TRUE)) |>
+  ggplot(aes(x = yob, y = score_mean, group = status)) +
+  geom_line(aes(color = status)) + 
+  geom_point(aes(color = status)) +
+  geom_hline(yintercept = 0.5, color = "black", linetype  = 2) +
+  theme_classic()
+```
+
+```{r}
+naab_old |>
+  separate(naab_code, into = c("primary_stud_code", "rest"), sep = 3, remove = FALSE) |>
+  mutate(primary_stud_code = as.numeric(primary_stud_code)) |>
+  select(-rest) ->
+  naab_old
+```
+
+
+```{r}
+naab_old <- left_join(naab_old, companies, by = "primary_stud_code")
+```
+
+
+
+```{r}
+naab_old|>
+  filter(reg_id %in% superstars$reg_id) ->
+  naab_super
+
+naab_super |> 
+  mutate(parent_company = ifelse(is.na(parent_company), company_name, parent_company)) |> 
+  tab(parent_company)
+```
+
+Most missing animals are from outside the US
+```{r}
+naab_super |> 
+  filter(is.na(company_name)) |> 
+  tab(country)
+```
+
+```{r}
+naab_super |> 
+  mutate(parent_company = ifelse(is.na(parent_company), company_name, parent_company)) |> 
+  filter(!is.na(parent_company) & yob > 2000) |>
+  tab(yob, parent_company)
+```
+
+```{r}
+pedigree |>
+  group_by(sire_id) |>
+  summarise(w = sum(weight)) |>
+  arrange(desc(w))
+```
+
+```{r, fig.height = 5, fig.width = 8, fig.align = "center"}
+alpha <- qnorm(0.99)
+naab_aiss |>
+  group_by(reg_id) |>
+  arrange(period) |>
+  slice_head(n = 1) |>
+  ungroup() |> 
+  group_by(year_proof) |>
+  summarise(age_m = mean(age),
+            age_sd = sd(age), 
+            N = n()) |>
+  ggplot(aes(x = year_proof, y = age_m)) + 
+  geom_point(color = "darkblue", size = 3) + 
+  geom_line(color = "darkblue", linewidth = 1) +
+  geom_ribbon(aes(ymin = age_m-alpha*age_sd/sqrt(N), 
+                  ymax = age_m+alpha*age_sd/sqrt(N)),
+              alpha = 0.15) +
+  theme_minimal() + 
+  geom_vline(xintercept =  2009, linetype = 2) + 
+  xlab("Year of first proof") + 
+  ylab("Average age at first proof") + 
+  scale_x_continuous(breaks = seq(2000, 2020, 5)) + 
+  ylim(0, 8)
+```
+
+```{r, fig.height = 5, fig.width = 8, fig.align = "center"}
+naab_aiss |>
+  group_by(reg_id) |>
+  arrange(period) |>
+  slice_head(n = 1) |>
+  ungroup() |> 
+  group_by(year_proof) |>
+  summarise(TPI_m = mean(TPI, na.rm = TRUE),
+            TPI_sd = sd(TPI, na.rm = TRUE), 
+            N = n()) |>
+  ggplot(aes(x = year_proof, y = TPI_m)) + 
+  geom_point(color = "darkgreen", size = 3) + 
+  geom_line(color = "darkgreen", linewidth = 1) + 
+  geom_ribbon(aes(ymin = TPI_m-alpha*TPI_sd/sqrt(N), 
+                  ymax = TPI_m+alpha*TPI_sd/sqrt(N)),
+              alpha = 0.15) +
+  theme_minimal() + 
+  geom_vline(xintercept =  2009, linetype = 2) +  
+  xlab("Year of first proof") + 
+  ylab("Average TPI") + 
+  scale_x_continuous(breaks = seq(2000, 2020, 5))
+```
+```{r}
+naab_aiss |>
+  group_by(reg_id) |>
+  arrange(period) |>
+  slice_head(n = 1) |>
+  ungroup() |> 
+  mutate(status_new = case_when(
+    status %in% c("A", "F") ~ "DP",
+    status == "G" ~ "GP"
+  )) |>
+  group_by(yob, status_new) |> 
+  summarise(N = n()) |> 
+  filter(yob > 1999 & yob < 2020 & !is.na(status_new)) |> 
+  ggplot(aes(x = yob, y = N)) + 
+  geom_line(aes(color = status_new), linewidth = 1) +
+  geom_vline(xintercept = 2010, linetype = 2) +
+  geom_text(aes(x = 2009, label="\nGenomics enters market", y = 1200), 
+            colour="black", angle=90) +
+  theme_minimal() + 
+  theme(legend.title = element_blank(),
+        legend.position = "bottom") +
+  scale_color_manual(values = c("red", "lightblue")) + 
+  scale_x_continuous(breaks = seq(2000, 2019, 2)) +
+  xlab("Year of first proof") + 
+  ylab("Number of bulls") 
+```
+```{r}
+naab_aiss |>
+  group_by(reg_id) |>
+  arrange(period) |>
+  slice_head(n = 1) |>
+  ungroup() |> 
+  mutate(status_new = case_when(
+    status %in% c("A", "F") ~ "DP",
+    status == "G" ~ "GP"
+  )) |>
+  group_by(yob, status_new) |> 
+  summarise(N = n()) |> 
+  filter(yob > 1999 & yob < 2020 & !is.na(status_new)) |>
+  data.frame() -> 
+  data
+write_csv(data, file = "C:/Users/victorf2/Box/dairy_matching/data/bulls_status.csv")
+```
+
