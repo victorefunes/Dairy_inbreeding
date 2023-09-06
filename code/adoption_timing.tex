@@ -1,0 +1,955 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same} % disable monospaced font for URLs
+\hypersetup{
+  pdftitle={Timing genomic Testing Adoption},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Timing genomic Testing Adoption}
+\author{}
+\date{\vspace{-2.5em}}
+
+\begin{document}
+\maketitle
+
+Load libraries
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{options}\NormalTok{(}\AttributeTok{warn=}\SpecialCharTok{{-}}\DecValTok{1}\NormalTok{)}
+\FunctionTok{library}\NormalTok{(tidyverse)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## -- Attaching core tidyverse packages ------------------------ tidyverse 2.0.0 --
+## v dplyr     1.1.1     v readr     2.1.4
+## v forcats   1.0.0     v stringr   1.5.0
+## v ggplot2   3.4.1     v tibble    3.2.1
+## v lubridate 1.9.2     v tidyr     1.3.0
+## v purrr     1.0.1     
+## -- Conflicts ------------------------------------------ tidyverse_conflicts() --
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()
+## i Use the ]8;;http://conflicted.r-lib.org/conflicted package]8;; to force all conflicts to become errors
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(bigrquery)}
+\FunctionTok{library}\NormalTok{(lubridate)}
+\FunctionTok{library}\NormalTok{(statar)}
+\FunctionTok{library}\NormalTok{(knitr)}
+\FunctionTok{library}\NormalTok{(stringi)}
+\FunctionTok{library}\NormalTok{(broom)}
+\FunctionTok{library}\NormalTok{(ggrepel)}
+\FunctionTok{library}\NormalTok{(ggfortify)}
+
+\FunctionTok{setwd}\NormalTok{(}\StringTok{"C:/Users/victo/Box/dairy\_matching/code/AISS data"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{naab-info-dataset}{%
+\section{NAAB Info dataset}\label{naab-info-dataset}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{projectid }\OtherTok{\textless{}{-}} \StringTok{"dairy{-}168114"}
+\NormalTok{query }\OtherTok{\textless{}{-}} \StringTok{"}
+\StringTok{SELECT}
+\StringTok{    reg\_id,}
+\StringTok{    id\_number,}
+\StringTok{    breed,}
+\StringTok{    country,}
+\StringTok{    primary\_naab\_code,}
+\StringTok{    naab\_codes,}
+\StringTok{    reg\_name,}
+\StringTok{    birthdate,}
+\StringTok{    semen\_release\_date,}
+\StringTok{    genotype\_information,}
+\StringTok{    sire\_breed,}
+\StringTok{    sire\_country,}
+\StringTok{    sire\_id\_number,}
+\StringTok{    dam\_breed,}
+\StringTok{    dam\_country,}
+\StringTok{    dam\_id\_number,}
+\StringTok{    mgs\_breed,}
+\StringTok{    mgs\_country,}
+\StringTok{    mgs\_id\_number,}
+\StringTok{    status}
+\StringTok{FROM}
+\StringTok{    CDCB\_data.NAAB\_Info}
+\StringTok{"}
+
+\NormalTok{naab }\OtherTok{\textless{}{-}} \FunctionTok{bq\_project\_query}\NormalTok{(projectid, query)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## ! Using an auto-discovered, cached token.
+\end{verbatim}
+
+\begin{verbatim}
+##   To suppress this message, modify your code or options to clearly consent to
+##   the use of a cached token.
+\end{verbatim}
+
+\begin{verbatim}
+##   See gargle's "Non-interactive auth" vignette for more details:
+\end{verbatim}
+
+\begin{verbatim}
+##   <]8;;https://gargle.r-lib.org/articles/non-interactive-auth.htmlhttps://gargle.r-lib.org/articles/non-interactive-auth.html]8;;>
+\end{verbatim}
+
+\begin{verbatim}
+## i The bigrquery package is using a cached token for ']8;;mailto:victorf2@illinois.eduvictorf2@illinois.edu]8;;'.
+\end{verbatim}
+
+\begin{verbatim}
+## Auto-refreshing stale OAuth token.
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{naab }\OtherTok{\textless{}{-}} \FunctionTok{bq\_table\_download}\NormalTok{(naab)}
+
+\NormalTok{naab }\OtherTok{\textless{}{-}}\NormalTok{ naab }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{birthdate =} \FunctionTok{mdy}\NormalTok{(birthdate),}
+         \AttributeTok{yob =} \FunctionTok{year}\NormalTok{(birthdate))}
+
+\NormalTok{naab }\OtherTok{\textless{}{-}}\NormalTok{ naab }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{id\_number =}\NormalTok{ stringr}\SpecialCharTok{::}\FunctionTok{str\_replace}\NormalTok{(id\_number, }\StringTok{"}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{."}\NormalTok{, }\StringTok{""}\NormalTok{),}
+         \AttributeTok{id\_number =} \FunctionTok{str\_pad}\NormalTok{(id\_number, }\AttributeTok{width =} \DecValTok{12}\NormalTok{, }\AttributeTok{side =} \StringTok{"left"}\NormalTok{, }\AttributeTok{pad =} \StringTok{"0"}\NormalTok{),}
+         \AttributeTok{reg\_id =} \FunctionTok{paste0}\NormalTok{(breed, country, id\_number))}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{aiss-data}{%
+\section{AISS data}\label{aiss-data}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{query }\OtherTok{\textless{}{-}} \StringTok{"SELECT}
+\StringTok{  country,}
+\StringTok{  id\_number,}
+\StringTok{  name,}
+\StringTok{  primary\_stud\_code,}
+\StringTok{  sire\_id,}
+\StringTok{  mgs\_id,}
+\StringTok{  period,}
+\StringTok{  status,}
+\StringTok{  breed,}
+\StringTok{  naab\_code,}
+\StringTok{  pta\_milk\_unadj as pta\_milk,}
+\StringTok{  pta\_fat\_lb\_unadj as pta\_fat\_lb,}
+\StringTok{  pta\_protein\_lb\_unadj as pta\_protein\_lb,}
+\StringTok{  pta\_scs\_unadj as pta\_scs,}
+\StringTok{  pta\_pl\_unadj as pta\_pl,}
+\StringTok{  pta\_dpr\_unadj as pta\_dpr,}
+\StringTok{  pta\_hcr\_unadj as pta\_hcr,}
+\StringTok{  pta\_ccr\_unadj as pta\_ccr,}
+\StringTok{  pta\_liv\_unadj as pta\_liv,}
+\StringTok{  pta\_ssb\_unadj as pta\_ssb,}
+\StringTok{  pta\_dsb\_unadj as pta\_dsb,}
+\StringTok{  pta\_type\_unadj as pta\_type,}
+\StringTok{  pta\_stature\_unadj as pta\_stature,}
+\StringTok{  pta\_strength\_unadj as pta\_strength,}
+\StringTok{  pta\_body\_depth\_unadj as pta\_body\_depth,}
+\StringTok{  pta\_dairy\_form\_unadj as pta\_dairy\_form,}
+\StringTok{  pta\_rump\_angle\_unadj as pta\_rump\_angle,}
+\StringTok{  pta\_thurl\_width\_unadj as pta\_thurl\_width,}
+\StringTok{  pta\_rear\_legs\_side\_unadj as pta\_rear\_legs\_side,}
+\StringTok{  pta\_rear\_legs\_rear\_unadj as pta\_rear\_legs\_rear,}
+\StringTok{  pta\_foot\_angle\_unadj as pta\_foot\_angle,}
+\StringTok{  pta\_foot\_leg\_score\_unadj as pta\_foot\_leg\_score,}
+\StringTok{  pta\_fore\_udder\_unadj as pta\_fore\_udder,}
+\StringTok{  pta\_rear\_udder\_height\_unadj as pta\_rear\_udder\_height,}
+\StringTok{  pta\_rear\_udder\_width\_unadj as pta\_rear\_udder\_width,}
+\StringTok{  pta\_udder\_cleft\_unadj as pta\_udder\_cleft,}
+\StringTok{  pta\_udder\_depth\_unadj as pta\_udder\_depth,}
+\StringTok{  pta\_teat\_front\_place\_unadj as pta\_teat\_front\_place,}
+\StringTok{  pta\_teat\_rear\_place\_unadj as pta\_teat\_rear\_place,}
+\StringTok{  pta\_teat\_length\_unadj as pta\_teat\_length,}
+\StringTok{  pta\_mobility,}
+\StringTok{  pta\_gest\_length\_unadj as pta\_gest\_length,}
+\StringTok{  pta\_ketosis\_unadj as pta\_ketosis,}
+\StringTok{  pta\_metritis\_unadj as pta\_metritis,}
+\StringTok{  pta\_mastitis\_unadj as pta\_mastitis,}
+\StringTok{  pta\_milk\_fever\_unadj as pta\_milk\_fever,}
+\StringTok{  FM\_unadj as FM,}
+\StringTok{  CM\_unadj as CM,}
+\StringTok{  GM\_unadj as GM,}
+\StringTok{  NM\_unadj as NM,}
+\StringTok{  TPI,}
+\StringTok{  udder\_composite, }
+\StringTok{  body\_weight\_composite,}
+\StringTok{  feet\_legs\_composite,}
+\StringTok{  aaa\_rating,}
+\StringTok{  daughts\_in\_milk\_pta,}
+\StringTok{  dob,}
+\StringTok{  semen\_price}
+\StringTok{FROM}
+\StringTok{  CDCB\_data.NAAB\_AISS}
+\StringTok{"}
+
+\NormalTok{naab\_aiss }\OtherTok{\textless{}{-}} \FunctionTok{bq\_project\_query}\NormalTok{(projectid, query)}
+\NormalTok{naab\_aiss }\OtherTok{\textless{}{-}} \FunctionTok{bq\_table\_download}\NormalTok{(naab\_aiss)}
+
+\NormalTok{naab\_aiss }\OtherTok{\textless{}{-}}\NormalTok{ naab\_aiss }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{separate}\NormalTok{(period, }\AttributeTok{into =} \FunctionTok{c}\NormalTok{(}\StringTok{"year"}\NormalTok{, }\StringTok{"per\_num"}\NormalTok{), }\AttributeTok{sep =} \StringTok{"{-}"}\NormalTok{, }\AttributeTok{remove =} \ConstantTok{FALSE}\NormalTok{) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{dob =} \FunctionTok{ymd}\NormalTok{(dob),}
+         \AttributeTok{yob =} \FunctionTok{year}\NormalTok{(dob))}
+
+\NormalTok{naab\_aiss }\OtherTok{\textless{}{-}}\NormalTok{ naab\_aiss }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{id\_number =}\NormalTok{ stringr}\SpecialCharTok{::}\FunctionTok{str\_replace}\NormalTok{(id\_number, }\StringTok{"}\SpecialCharTok{\textbackslash{}\textbackslash{}}\StringTok{."}\NormalTok{, }\StringTok{""}\NormalTok{),}
+         \AttributeTok{id\_number =} \FunctionTok{str\_pad}\NormalTok{(id\_number, }\AttributeTok{width =} \DecValTok{12}\NormalTok{, }\AttributeTok{side =} \StringTok{"left"}\NormalTok{, }\AttributeTok{pad =} \StringTok{"0"}\NormalTok{),}
+         \AttributeTok{reg\_id =} \FunctionTok{paste0}\NormalTok{(breed, country, id\_number))}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{characterizing-missing-status-animals}{%
+\section{Characterizing ``missing'' status
+animals}\label{characterizing-missing-status-animals}}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  National origin
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{naab\_aiss }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{filter}\NormalTok{(}\FunctionTok{is.na}\NormalTok{(status)) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{tab}\NormalTok{(country)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##  
+## country │    Freq.  Percent     Cum. 
+## ────────┼────────────────────────────
+##     840 │       91     2.06     2.06 
+##     AUS │        9     0.20     2.27 
+##     CAN │     1236    28.01    30.28 
+##     CHE │        8     0.18    30.46 
+##     CZE │        4     0.09    30.55 
+##     DEU │       46     1.04    31.60 
+##     DNK │       27     0.61    32.21 
+##     FRA │       21     0.48    32.68 
+##     GBR │        8     0.18    32.86 
+##     HUN │       32     0.73    33.59 
+##     ITA │        4     0.09    33.68 
+##     NLD │       98     2.22    35.90 
+##     NZL │      318     7.21    43.11 
+##     USA │     2510    56.89   100.00
+\end{verbatim}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{1}
+\tightlist
+\item
+  Number of daughters
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{naab\_aiss }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{filter}\NormalTok{(}\FunctionTok{is.na}\NormalTok{(status)) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{group\_by}\NormalTok{(country) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{filter}\NormalTok{(daughts\_in\_milk\_pta }\SpecialCharTok{!=} \DecValTok{99999}\NormalTok{) }\SpecialCharTok{|\textgreater{}} 
+  \FunctionTok{summarise}\NormalTok{(}\AttributeTok{daught =} \FunctionTok{max}\NormalTok{(daughts\_in\_milk\_pta, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{),  }\AttributeTok{N =} \FunctionTok{n}\NormalTok{())}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 14 x 3
+##    country daught     N
+##    <chr>    <dbl> <int>
+##  1 840       1400    91
+##  2 AUS      97727     9
+##  3 CAN      76169  1233
+##  4 CHE      12985     8
+##  5 CZE        217     4
+##  6 DEU      29439    46
+##  7 DNK      32002    27
+##  8 FRA       1027     7
+##  9 GBR       1687     8
+## 10 HUN      21838    32
+## 11 ITA        161     4
+## 12 NLD      26878    98
+## 13 NZL      54159   318
+## 14 USA      71300  2499
+\end{verbatim}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{2}
+\tightlist
+\item
+  Age
+\end{enumerate}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{naab\_aiss }\SpecialCharTok{|\textgreater{}} 
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{period =} \FunctionTok{ym}\NormalTok{(period),}
+         \AttributeTok{year =} \FunctionTok{year}\NormalTok{(period),}
+         \AttributeTok{age =}\NormalTok{ year}\SpecialCharTok{{-}}\NormalTok{yob) }\OtherTok{{-}\textgreater{}}
+\NormalTok{  naab\_aiss}
+\end{Highlighting}
+\end{Shaded}
+
+Active and Foreign bulls show up first at ages 4 or 5, genomic bulls at
+age 1.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{kable}\NormalTok{(table1)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}rrrr@{}}
+\toprule()
+age & G & A & F \\
+\midrule()
+\endhead
+0 & 92 & NA & NA \\
+1 & 9517 & 1 & NA \\
+2 & 4338 & NA & NA \\
+3 & 720 & NA & NA \\
+4 & 253 & 382 & 38 \\
+5 & 71 & 2723 & 754 \\
+6 & 7 & 1018 & 670 \\
+7 & 2 & 263 & 319 \\
+8 & NA & 173 & 221 \\
+9 & NA & 115 & 106 \\
+10 & NA & 85 & 66 \\
+11 & NA & 53 & 28 \\
+12 & NA & 29 & 17 \\
+13 & NA & 22 & 11 \\
+14 & NA & 11 & 5 \\
+15 & NA & 9 & 1 \\
+16 & NA & 2 & NA \\
+17 & NA & 1 & NA \\
+18 & NA & 1 & 2 \\
+24 & NA & NA & 1 \\
+\bottomrule()
+\end{longtable}
+
+Fill out missing values with last missing status
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{naab\_aiss}\SpecialCharTok{|\textgreater{}} 
+  \FunctionTok{group\_by}\NormalTok{(reg\_id) }\SpecialCharTok{|\textgreater{}} 
+  \FunctionTok{fill}\NormalTok{(status, }\AttributeTok{.direction =} \StringTok{"down"}\NormalTok{) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{ungroup}\NormalTok{() }\OtherTok{{-}\textgreater{}}
+\NormalTok{  naab\_aiss}
+\end{Highlighting}
+\end{Shaded}
+
+Status by year of proof
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{naab\_aiss }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{year\_proof =} \FunctionTok{year}\NormalTok{(period)) }\OtherTok{{-}\textgreater{}}
+\NormalTok{  naab\_aiss}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{kable}\NormalTok{(table2)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}rrrr@{}}
+\toprule()
+year\_proof & A & F & G \\
+\midrule()
+\endhead
+2000 & 3676 & 761 & NA \\
+2001 & 3233 & 720 & NA \\
+2002 & 3553 & 650 & NA \\
+2003 & 3487 & 702 & NA \\
+2004 & 3383 & 746 & NA \\
+2005 & 3297 & 687 & NA \\
+2006 & 3525 & 793 & NA \\
+2007 & 2729 & 578 & NA \\
+2008 & 3006 & 738 & NA \\
+2009 & 2951 & 849 & NA \\
+2010 & 3732 & 1354 & 1774 \\
+2011 & 2923 & 1336 & 2789 \\
+2012 & 2886 & 1310 & 3654 \\
+2013 & 2905 & 1255 & 4806 \\
+2014 & 2885 & 1243 & 5831 \\
+2015 & 2689 & 1219 & 6347 \\
+2016 & 2646 & 1071 & 8009 \\
+2017 & 2532 & 901 & 8016 \\
+2018 & 2210 & 1182 & 9202 \\
+2019 & 2113 & 1394 & 9850 \\
+2020 & 2325 & 1856 & 10811 \\
+2021 & 1926 & 1525 & 7538 \\
+\bottomrule()
+\end{longtable}
+
+Status by year of birth
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{kable}\NormalTok{(table3)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}rrrr@{}}
+\toprule()
+age & A & F & G \\
+\midrule()
+\endhead
+0 & NA & NA & 92 \\
+1 & 3 & NA & 15592 \\
+2 & 3 & NA & 28777 \\
+3 & 26 & NA & 19802 \\
+4 & 2627 & 239 & 10386 \\
+5 & 12151 & 2956 & 2769 \\
+6 & 14109 & 5094 & 749 \\
+7 & 10389 & 4610 & 264 \\
+8 & 7527 & 3626 & 117 \\
+9 & 5577 & 2413 & 51 \\
+10 & 3975 & 1502 & 21 \\
+11 & 2767 & 967 & 5 \\
+\bottomrule()
+\end{longtable}
+
+Year of proof and age by status
+
+\textbf{Question}: What is the valid comparison? Let \(t\) be the year
+of birth of a bull. 1. \(genomic_{t}\) vs \(active_{t}\) 2.
+\(genomic_{t}\) vs \(active_{t-5}\)
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{kable}\NormalTok{(genomic\_age)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 24\tabcolsep) * \real{0.0625}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 24\tabcolsep) * \real{0.0781}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 24\tabcolsep) * \real{0.0781}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 24\tabcolsep) * \real{0.0781}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 24\tabcolsep) * \real{0.0781}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 24\tabcolsep) * \real{0.0781}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 24\tabcolsep) * \real{0.0781}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 24\tabcolsep) * \real{0.0781}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 24\tabcolsep) * \real{0.0781}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 24\tabcolsep) * \real{0.0781}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 24\tabcolsep) * \real{0.0781}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 24\tabcolsep) * \real{0.0781}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 24\tabcolsep) * \real{0.0781}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedleft
+age
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+2010
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+2011
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+2012
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+2013
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+2014
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+2015
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+2016
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+2017
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+2018
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+2019
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+2020
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+2021
+\end{minipage} \\
+\midrule()
+\endhead
+0 & 1 & 1 & NA & NA & 3 & 1 & 9 & 14 & 24 & 26 & 13 & NA \\
+1 & 432 & 661 & 673 & 954 & 1250 & 1307 & 1909 & 1564 & 1982 & 1706 &
+2169 & 985 \\
+2 & 774 & 1080 & 1639 & 1717 & 2291 & 2541 & 2654 & 3237 & 3129 & 3921 &
+3163 & 2631 \\
+3 & 337 & 665 & 879 & 1394 & 1294 & 1598 & 2098 & 1819 & 2581 & 2195 &
+3229 & 1713 \\
+4 & 188 & 318 & 386 & 595 & 789 & 674 & 975 & 999 & 1084 & 1464 & 1414 &
+1500 \\
+5 & 40 & 59 & 66 & 118 & 171 & 184 & 262 & 248 & 308 & 345 & 569 &
+399 \\
+6 & 2 & 4 & 10 & 21 & 26 & 38 & 59 & 99 & 42 & 124 & 141 & 183 \\
+7 & NA & 1 & 1 & 7 & 4 & NA & 31 & 27 & 46 & 19 & 63 & 65 \\
+8 & NA & NA & NA & NA & 3 & 3 & 4 & 8 & 3 & 44 & 18 & 34 \\
+9 & NA & NA & NA & NA & NA & 1 & 7 & 1 & 3 & 3 & 26 & 10 \\
+10 & NA & NA & NA & NA & NA & NA & 1 & NA & NA & 3 & 3 & 14 \\
+11 & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA & 3 & 2 \\
+12 & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA & NA & 2 \\
+\bottomrule()
+\end{longtable}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{kable}\NormalTok{(active\_age)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 34\tabcolsep) * \real{0.0449}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 34\tabcolsep) * \real{0.0562}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 34\tabcolsep) * \real{0.0562}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 34\tabcolsep) * \real{0.0562}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 34\tabcolsep) * \real{0.0562}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 34\tabcolsep) * \real{0.0562}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 34\tabcolsep) * \real{0.0562}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 34\tabcolsep) * \real{0.0562}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 34\tabcolsep) * \real{0.0562}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 34\tabcolsep) * \real{0.0562}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 34\tabcolsep) * \real{0.0562}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 34\tabcolsep) * \real{0.0562}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 34\tabcolsep) * \real{0.0562}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 34\tabcolsep) * \real{0.0562}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 34\tabcolsep) * \real{0.0562}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 34\tabcolsep) * \real{0.0562}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 34\tabcolsep) * \real{0.0562}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 34\tabcolsep) * \real{0.0562}}@{}}
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedleft
+age
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+2005
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+2006
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+2007
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+2008
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+2009
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+2010
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+2011
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+2012
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+2013
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+2014
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+2015
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+2016
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+2017
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+2018
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+2019
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+2020
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+2021
+\end{minipage} \\
+\midrule()
+\endhead
+1 & NA & NA & NA & NA & NA & NA & 3 & NA & NA & NA & NA & NA & NA & NA &
+NA & NA & NA \\
+2 & NA & NA & NA & NA & NA & NA & NA & 3 & NA & NA & NA & NA & NA & NA &
+NA & NA & NA \\
+3 & NA & NA & NA & NA & NA & NA & NA & 1 & 3 & NA & 1 & 4 & 1 & 2 & NA &
+12 & 2 \\
+4 & 31 & 16 & 6 & 2 & 8 & 95 & 83 & 126 & 165 & 229 & 206 & 241 & 328 &
+215 & 343 & 225 & 189 \\
+5 & 484 & 649 & 391 & 403 & 374 & 517 & 514 & 468 & 579 & 636 & 708 &
+636 & 668 & 661 & 490 & 770 & 487 \\
+6 & 713 & 798 & 666 & 662 & 707 & 785 & 541 & 544 & 480 & 568 & 457 &
+598 & 451 & 477 & 451 & 389 & 490 \\
+7 & 529 & 611 & 510 & 569 & 511 & 602 & 478 & 452 & 411 & 358 & 364 &
+301 & 345 & 268 & 302 & 319 & 221 \\
+8 & 502 & 414 & 382 & 419 & 428 & 471 & 332 & 363 & 342 & 267 & 217 &
+227 & 191 & 173 & 154 & 191 & 187 \\
+9 & 349 & 369 & 235 & 328 & 298 & 416 & 249 & 248 & 270 & 223 & 171 &
+151 & 133 & 115 & 104 & 106 & 98 \\
+10 & 235 & 238 & 209 & 197 & 216 & 295 & 219 & 180 & 204 & 177 & 142 &
+110 & 106 & 72 & 86 & 80 & 60 \\
+11 & 176 & 144 & 123 & 168 & 130 & 168 & 171 & 144 & 121 & 137 & 109 &
+118 & 79 & 63 & 47 & 81 & 45 \\
+12 & 119 & 114 & 68 & 96 & 122 & 139 & 103 & 120 & 98 & 82 & 107 & 78 &
+71 & 45 & 37 & 38 & 50 \\
+\bottomrule()
+\end{longtable}
+
+\hypertarget{how-old-are-bulls-when-they-are-proven-for-the-first-time}{%
+\section{How old are bulls when they are proven for the first
+time?:}\label{how-old-are-bulls-when-they-are-proven-for-the-first-time}}
+
+Genomic-tested bulls are proven mostly at ages 1 or 2, daughter-proven
+bulls wait until they are 4-6 years old. The average lifespan of a
+bovine is 10-12 years old
+\href{source}{https://livestock.extension.wisc.edu/articles/when-to-cull-bulls}.
+We can assume that bulls 10 years and older are just frozen semen
+samples.
+
+Other thing to note, we have 92 bulls tested before they reach one year
+of age.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{kable}\NormalTok{(table4) }
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}rrrr@{}}
+\toprule()
+age\_proof & A & F & G \\
+\midrule()
+\endhead
+0 & NA & NA & 92 \\
+1 & 1 & NA & 9517 \\
+2 & NA & NA & 4339 \\
+3 & 17 & NA & 721 \\
+4 & 1861 & 191 & 254 \\
+5 & 3912 & 1355 & 71 \\
+6 & 1264 & 828 & 7 \\
+7 & 366 & 345 & 2 \\
+8 & 304 & 223 & NA \\
+9 & 255 & 113 & NA \\
+10 & 157 & 69 & NA \\
+11 & 106 & 30 & NA \\
+12 & 51 & 19 & NA \\
+13 & 37 & 12 & NA \\
+14 & 16 & 5 & NA \\
+15 & 9 & 1 & NA \\
+16 & 4 & NA & NA \\
+17 & 2 & NA & NA \\
+18 & 1 & 2 & NA \\
+24 & 1 & 1 & NA \\
+\bottomrule()
+\end{longtable}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{age\_proof\_bulls }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{rename}\NormalTok{(}\AttributeTok{frequency =} \StringTok{\textasciigrave{}}\AttributeTok{Freq.}\StringTok{\textasciigrave{}}\NormalTok{) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{select}\NormalTok{(}\FunctionTok{c}\NormalTok{(status, age\_proof, frequency)) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{ggplot}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ age\_proof, }\AttributeTok{y =}\NormalTok{ frequency, }\AttributeTok{group =}\NormalTok{ status)) }\SpecialCharTok{+} 
+  \FunctionTok{geom\_bar}\NormalTok{(}\AttributeTok{stat=}\StringTok{"identity"}\NormalTok{, }\FunctionTok{aes}\NormalTok{(}\AttributeTok{fill =}\NormalTok{ status)) }\SpecialCharTok{+} 
+  \FunctionTok{theme\_classic}\NormalTok{() }
+\end{Highlighting}
+\end{Shaded}
+
+\begin{center}\includegraphics{adoption_timing_files/figure-latex/unnamed-chunk-21-1} \end{center}
+
+The key period to look into is 2010-2015
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{kable}\NormalTok{(first\_proof)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}rrrr@{}}
+\toprule()
+year & A & F & G \\
+\midrule()
+\endhead
+2000 & 1156 & 277 & NA \\
+2001 & 217 & 92 & NA \\
+2002 & 391 & 114 & NA \\
+2003 & 249 & 92 & NA \\
+2004 & 251 & 92 & NA \\
+2005 & 254 & 71 & NA \\
+2006 & 298 & 114 & NA \\
+2007 & 237 & 69 & NA \\
+2008 & 325 & 214 & NA \\
+2009 & 312 & 118 & NA \\
+2010 & 333 & 246 & 903 \\
+2011 & 203 & 152 & 798 \\
+2012 & 155 & 109 & 844 \\
+2013 & 124 & 118 & 1071 \\
+2014 & 112 & 73 & 1265 \\
+2015 & 78 & 67 & 1317 \\
+2016 & 55 & 34 & 1623 \\
+2017 & 33 & 16 & 1289 \\
+2018 & 31 & 65 & 1712 \\
+2019 & 38 & 20 & 1446 \\
+2020 & 35 & 24 & 1617 \\
+2021 & 11 & 71 & 1118 \\
+\bottomrule()
+\end{longtable}
+
+CDN data
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{cdn }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\StringTok{"C:/Users/victo/Box/Dairy Industry in US/Data/Network data/cdn\_data.csv"}\NormalTok{)}
+\NormalTok{naab\_aiss }\OtherTok{\textless{}{-}} \FunctionTok{inner\_join}\NormalTok{(naab\_aiss, cdn[}\FunctionTok{c}\NormalTok{(}\StringTok{"reg\_id\_alt"}\NormalTok{, }\StringTok{"inbreeding"}\NormalTok{, }\StringTok{"relationship"}\NormalTok{)], }\AttributeTok{by =} \FunctionTok{join\_by}\NormalTok{(reg\_id }\SpecialCharTok{==}\NormalTok{ reg\_id\_alt))}
+\end{Highlighting}
+\end{Shaded}
+
+Genomic tested animals are on average more inbred than daughter-proven
+bulls.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{naab\_aiss }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{group\_by}\NormalTok{(reg\_id) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{arrange}\NormalTok{(year\_proof) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{slice\_tail}\NormalTok{(}\AttributeTok{n =} \DecValTok{1}\NormalTok{) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{ungroup}\NormalTok{() }\SpecialCharTok{|\textgreater{}} 
+  \FunctionTok{group\_by}\NormalTok{(status) }\SpecialCharTok{|\textgreater{}} 
+  \FunctionTok{summarise}\NormalTok{(}\AttributeTok{inb =} \FunctionTok{mean}\NormalTok{(inbreeding, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{), }
+            \AttributeTok{N =} \FunctionTok{n}\NormalTok{())}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 4 x 3
+##   status   inb     N
+##   <chr>  <dbl> <int>
+## 1 A       6.55  7444
+## 2 F       5.61  2024
+## 3 G       9.75 11191
+## 4 <NA>    6.10   259
+\end{verbatim}
+
+Inbreeding rates are increasing for all classes of bulls, in all cases
+it increases significantly after the introduction of genomic testing.
+Here I show he values of the first proof of each animal.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{kable}\NormalTok{(inbreeding\_year)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}rrrr@{}}
+\toprule()
+yob & A & F & G \\
+\midrule()
+\endhead
+2006 & 6.234800 & 6.466081 & 6.254021 \\
+2007 & 6.292248 & 5.861429 & 6.432842 \\
+2008 & 5.998965 & 6.361622 & 6.528974 \\
+2009 & 6.103371 & 6.531500 & 6.707223 \\
+2010 & 6.552051 & 5.700000 & 6.420055 \\
+2011 & 6.839355 & 4.887857 & 6.813559 \\
+2012 & 7.761923 & 4.077333 & 7.515179 \\
+2013 & 8.149200 & 4.807826 & 8.000730 \\
+2014 & 7.833415 & 5.104815 & 8.447690 \\
+2015 & 9.902143 & 5.250400 & 9.255717 \\
+2016 & 10.317692 & 5.385000 & 9.921886 \\
+2017 & 11.120000 & NA & 11.388001 \\
+2018 & NA & NA & 11.752563 \\
+2019 & NA & NA & 12.345264 \\
+2020 & NA & NA & 12.693947 \\
+\bottomrule()
+\end{longtable}
+
+The distribution of inbreeding coefficients is skewed to the left,
+reflecting a higher average inbreeding, as evidenced by its mean
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{naab\_aiss }\SpecialCharTok{|\textgreater{}} 
+  \FunctionTok{filter}\NormalTok{(}\SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(status) }\SpecialCharTok{\&} \SpecialCharTok{!}\FunctionTok{is.na}\NormalTok{(inbreeding) }\SpecialCharTok{\&}\NormalTok{ inbreeding }\SpecialCharTok{\textgreater{}} \DecValTok{0}\NormalTok{) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{group\_by}\NormalTok{(reg\_id) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{arrange}\NormalTok{(year\_proof) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{slice\_head}\NormalTok{(}\AttributeTok{n =} \DecValTok{1}\NormalTok{) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{ungroup}\NormalTok{() }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{ggplot}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{x =}\NormalTok{ inbreeding, }\AttributeTok{group =}\NormalTok{ status)) }\SpecialCharTok{+} 
+  \FunctionTok{geom\_density}\NormalTok{(}\FunctionTok{aes}\NormalTok{(}\AttributeTok{fill =}\NormalTok{ status), }\AttributeTok{alpha =} \FloatTok{0.35}\NormalTok{) }\SpecialCharTok{+} 
+  \FunctionTok{theme\_classic}\NormalTok{() }\SpecialCharTok{+} 
+  \FunctionTok{xlab}\NormalTok{(}\StringTok{"Inbreeding Coefficient"}\NormalTok{) }\SpecialCharTok{+} \FunctionTok{ylab}\NormalTok{(}\StringTok{"Density"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{adoption_timing_files/figure-latex/unnamed-chunk-28-1.pdf}
+\#\# Characterizing early adopters \# Farm names
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{farm\_names }\OtherTok{\textless{}{-}} \FunctionTok{read\_csv}\NormalTok{(}\StringTok{"C:/Users/victo/Box/WDE Results/bull\_and\_farm\_names.csv"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Rows: 166057 Columns: 3
+## -- Column specification --------------------------------------------------------
+## Delimiter: ","
+## chr (3): reg_id, naab_code, farm_name
+## 
+## i Use `spec()` to retrieve the full column specification for this data.
+## i Specify the column types or set `show_col_types = FALSE` to quiet this message.
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{farm\_names }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{distinct}\NormalTok{(reg\_id, }\AttributeTok{.keep\_all =} \ConstantTok{TRUE}\NormalTok{) }\OtherTok{{-}\textgreater{}}
+\NormalTok{  farm\_names}
+
+\NormalTok{naab\_aiss }\OtherTok{\textless{}{-}} \FunctionTok{left\_join}\NormalTok{(naab\_aiss, farm\_names, }\AttributeTok{by =} \FunctionTok{join\_by}\NormalTok{(reg\_id }\SpecialCharTok{==}\NormalTok{ reg\_id))}
+\NormalTok{naab\_aiss }\SpecialCharTok{|\textgreater{}} 
+  \FunctionTok{select}\NormalTok{(}\SpecialCharTok{{-}}\NormalTok{naab\_code.y) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{rename}\NormalTok{(}\AttributeTok{naab\_code =}\NormalTok{ naab\_code.x) }\OtherTok{{-}\textgreater{}}
+\NormalTok{  naab\_aiss}
+\end{Highlighting}
+\end{Shaded}
+
+Inbreeding coefficient og early adopters
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{eadopt }\OtherTok{\textless{}{-}}\NormalTok{ naab\_aiss }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{filter}\NormalTok{(status }\SpecialCharTok{==} \StringTok{"G"} \SpecialCharTok{\&}\NormalTok{ yob }\SpecialCharTok{\textless{}} \DecValTok{2010}\NormalTok{) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{group\_by}\NormalTok{(reg\_id) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{arrange}\NormalTok{(year\_proof) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{slice\_head}\NormalTok{(}\AttributeTok{n =} \DecValTok{1}\NormalTok{) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{ungroup}\NormalTok{()}
+
+\NormalTok{eadopt }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{group\_by}\NormalTok{(yob) }\SpecialCharTok{|\textgreater{}}
+  \FunctionTok{summarise}\NormalTok{(}\AttributeTok{mean =} \FunctionTok{mean}\NormalTok{(inbreeding, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{), }
+            \AttributeTok{max =} \FunctionTok{max}\NormalTok{(inbreeding, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{), }
+            \AttributeTok{min =} \FunctionTok{min}\NormalTok{(inbreeding, }\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{), }
+            \AttributeTok{N =} \FunctionTok{n}\NormalTok{())}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## # A tibble: 6 x 5
+##     yob  mean   max   min     N
+##   <dbl> <dbl> <dbl> <dbl> <int>
+## 1  2004  6.92  7.88  5.96     2
+## 2  2005  6.92 15.7   1.84    27
+## 3  2006  6.25 18.1   0.57    97
+## 4  2007  6.41 17.8   0      193
+## 5  2008  6.45 13.0   0      395
+## 6  2009  6.69 16.5   0      571
+\end{verbatim}
+
+\end{document}

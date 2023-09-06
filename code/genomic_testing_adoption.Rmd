@@ -1,0 +1,481 @@
+---
+title: "Genomic Testing"
+output:
+  html_document:
+    df_print: paged
+---
+
+## What factors influenced the decision of which bull to genomic test from its inception?
+
+Load libraries
+```{r}
+options(warn=-1)
+library(tidyverse)
+library(bigrquery)
+library(lubridate)
+library(statar)
+library(knitr)
+library(stringi)
+library(broom)
+library(ggrepel)
+library(ggfortify)
+
+folder <- "C:/Users/victorf2"
+#folder <- "C:/Users/victo"
+
+setwd(paste0(folder, "/Box/dairy_matching/code/AISS data"))
+
+```
+
+# NAAB Info dataset
+```{r}
+projectid <- "dairy-168114"
+query <- "
+SELECT
+    reg_id,
+    id_number,
+    breed,
+    country,
+    primary_naab_code,
+    naab_codes,
+    reg_name,
+    birthdate,
+    semen_release_date,
+    genotype_information,
+    sire_breed,
+    sire_country,
+    sire_id_number,
+    dam_breed,
+    dam_country,
+    dam_id_number,
+    mgs_breed,
+    mgs_country,
+    mgs_id_number,
+    status
+FROM
+    CDCB_data.NAAB_Info
+"
+
+naab <- bq_project_query(projectid, query)
+naab <- bq_table_download(naab)
+
+naab <- naab %>%
+  mutate(birthdate = mdy(birthdate),
+         yob = year(birthdate))
+
+naab <- naab |>
+  mutate(id_number = stringr::str_replace(id_number, "\\.", ""),
+         id_number = str_pad(id_number, width = 12, side = "left", pad = "0"),
+         reg_id = paste0(breed, country, id_number))
+```
+
+# AISS data
+```{r}
+query <- "SELECT
+  country,
+  id_number,
+  name,
+  primary_stud_code,
+  sire_id,
+  mgs_id,
+  period,
+  status,
+  breed,
+  naab_code,
+  pta_milk_unadj as pta_milk,
+  pta_fat_lb_unadj as pta_fat_lb,
+  pta_protein_lb_unadj as pta_protein_lb,
+  pta_scs_unadj as pta_scs,
+  pta_pl_unadj as pta_pl,
+  pta_dpr_unadj as pta_dpr,
+  pta_hcr_unadj as pta_hcr,
+  pta_ccr_unadj as pta_ccr,
+  pta_liv_unadj as pta_liv,
+  pta_ssb_unadj as pta_ssb,
+  pta_dsb_unadj as pta_dsb,
+  pta_type_unadj as pta_type,
+  pta_stature_unadj as pta_stature,
+  pta_strength_unadj as pta_strength,
+  pta_body_depth_unadj as pta_body_depth,
+  pta_dairy_form_unadj as pta_dairy_form,
+  pta_rump_angle_unadj as pta_rump_angle,
+  pta_thurl_width_unadj as pta_thurl_width,
+  pta_rear_legs_side_unadj as pta_rear_legs_side,
+  pta_rear_legs_rear_unadj as pta_rear_legs_rear,
+  pta_foot_angle_unadj as pta_foot_angle,
+  pta_foot_leg_score_unadj as pta_foot_leg_score,
+  pta_fore_udder_unadj as pta_fore_udder,
+  pta_rear_udder_height_unadj as pta_rear_udder_height,
+  pta_rear_udder_width_unadj as pta_rear_udder_width,
+  pta_udder_cleft_unadj as pta_udder_cleft,
+  pta_udder_depth_unadj as pta_udder_depth,
+  pta_teat_front_place_unadj as pta_teat_front_place,
+  pta_teat_rear_place_unadj as pta_teat_rear_place,
+  pta_teat_length_unadj as pta_teat_length,
+  pta_mobility,
+  pta_gest_length_unadj as pta_gest_length,
+  pta_ketosis_unadj as pta_ketosis,
+  pta_metritis_unadj as pta_metritis,
+  pta_mastitis_unadj as pta_mastitis,
+  pta_milk_fever_unadj as pta_milk_fever,
+  FM_unadj as FM,
+  CM_unadj as CM,
+  GM_unadj as GM,
+  NM_unadj as NM,
+  TPI,
+  udder_composite, 
+  body_weight_composite,
+  feet_legs_composite,
+  aaa_rating,
+  daughts_in_milk_pta,
+  dob,
+  semen_price
+FROM
+  CDCB_data.NAAB_AISS
+"
+
+naab_aiss <- bq_project_query(projectid, query)
+naab_aiss <- bq_table_download(naab_aiss)
+
+naab_aiss <- naab_aiss %>%
+  separate(period, into = c("year", "per_num"), sep = "-", remove = FALSE) |>
+  mutate(dob = ymd(dob),
+         yob = year(dob))
+
+naab_aiss <- naab_aiss |>
+  mutate(id_number = stringr::str_replace(id_number, "\\.", ""),
+         id_number = str_pad(id_number, width = 12, side = "left", pad = "0"),
+         reg_id = paste0(breed, country, id_number))
+```
+
+```{r}
+naab_aiss |> 
+  mutate(period = ym(period),
+         year = year(period),
+         age = year-yob) ->
+  naab_aiss
+```
+
+Fill out missing values with last missing status
+```{r}
+naab_aiss|> 
+  group_by(reg_id) |> 
+  fill(status, .direction = "down") |>
+  ungroup() ->
+  naab_aiss
+```
+
+Status by year of proof
+```{r}
+naab_aiss |>
+  mutate(year_proof = year(period)) ->
+  naab_aiss
+```
+
+# CDN data
+```{r}
+cdn <- read.csv("C:/Users/victorf2/Box/Dairy Industry in US/Data/Network data/cdn_data.csv")
+
+cdn |> 
+  distinct(reg_id, .keep_all = TRUE) |>
+  tab(country)
+```
+
+# Merge datasets
+```{r}
+naab_aiss <- inner_join(naab_aiss, cdn[c("reg_id_alt", "inbreeding", "relationship")], by = join_by(reg_id == reg_id_alt))
+naab_aiss |> 
+  group_by(status) |> 
+  summarise(inb = mean(inbreeding, na.rm = TRUE), 
+            N = n())
+rm(cdn)
+```
+
+Keep unique reg_id-period pairs
+```{r}
+naab_aiss |>
+  distinct(reg_id, period, .keep_all = TRUE) ->
+  naab_aiss
+```
+
+
+# Number of daughters per sire
+```{r}
+naab <- naab  |>
+  mutate(sire_id_number = stringr::str_replace(sire_id_number, "\\.", ""),
+         sire_id_number = str_pad(sire_id_number, width = 12, side = "left", pad = "0"),
+         sire_id = paste0(sire_breed, sire_country, sire_id_number))
+
+naab$sire_id <- replace(naab$sire_id, naab$sire_id == "NANANA", NA)
+
+naab <- naab  |>
+  mutate(mgs_id_number = stringr::str_replace(mgs_id_number, "\\.", ""),
+         mgs_id_number = str_pad(mgs_id_number, width = 12, side = "left", pad = "0"),
+         mgs_id = paste0(mgs_breed, mgs_country, mgs_id_number))
+
+naab$mgs_id <- replace(naab$mgs_id, naab$mgs_id == "NANANA", NA)
+
+naab <- naab  |>
+  mutate(dam_id_number = stringr::str_replace(dam_id_number, "\\.", ""),
+         dam_id_number = str_pad(dam_id_number, width = 12, side = "left", pad = "0"),
+         dam_id = paste0(dam_breed, dam_country, dam_id_number))
+
+naab$dam_id <- replace(naab$dam_id, naab$dam_id == "NANANA", NA)
+```
+
+Get sire PTAs
+```{r}
+naab_old <- read_csv("../../data/old_evals_clean.csv")
+```
+
+
+```{r}
+sires <- naab |>
+  select(c(reg_id, yob, sire_id)) |>
+  distinct(reg_id, sire_id, .keep_all = TRUE)
+
+sires <- full_join(sires, naab_old, by = join_by(sire_id == reg_id), relationship = "many-to-many")
+sires <- sires |>
+  filter(!duplicated(reg_id, sire_id))
+
+
+#names(sires) <- c("reg_id", paste0(names(sires), "_sire"))
+```
+
+# Farm names
+```{r}
+farm_names <- read_csv("C:/Users/victorf2/Box/WDE Results/bull_and_farm_names.csv")
+naab_aiss <- left_join(naab_aiss, farm_names, by = join_by(reg_id == reg_id))
+naab_aiss |> 
+  select(-naab_code.y) |>
+  rename(naab_code = naab_code.x) ->
+  naab_aiss
+```
+
+
+# Pedigree (only animals born before 2014)
+```{r}
+#source("pedigree_build.R")
+```
+
+```{r}
+naab_aiss |>
+  filter(yob < 2014) ->
+  naab_aiss
+```
+
+```{r}
+naab_unique |>
+  mutate(yob = year(dob)) |>
+  filter(yob < 2014) ->
+  naab_unique
+```
+
+```{r}
+edges <- left_join(edges_1, naab_unique, by = join_by(from == reg_id))
+edges |> 
+  group_by(to) |> 
+  summarise(across(c(contains("pta"), NM, TPI, FM, CM, GM, udder_composite, 
+                     body_weight_composite, feet_legs_composite, daughts_in_milk_pta,
+                     semen_price),  ~ weighted.mean(.x, w = val, na.rm = TRUE))) ->
+  edges
+names(edges) <- c("reg_id", paste0("w_", names(edges)[2:47]))
+```
+
+```{r}
+naab_unique <- left_join(naab_unique, edges, by = join_by(reg_id == reg_id))
+
+naab_unique |>
+  select(c(reg_id, contains("w_"))) -> 
+  naab_unique
+
+naab_aiss <- left_join(naab_aiss, naab_unique, by = join_by(reg_id == reg_id))
+rm(naab_unique)
+```
+
+```{r}
+naab_aiss <- left_join(naab_aiss, sires, by = join_by(reg_id == reg_id_sire))
+naab_aiss |>
+  distinct(reg_id, period, .keep_all = TRUE) ->
+  naab_aiss
+rm(farm_names, sires)
+```
+
+# Models
+```{r}
+naab_aiss |>
+  mutate(status_1 = ifelse(status == "G", 1, 0)) |>
+  filter(yob > 2006 & !is.na(farm_name)) ->
+  naab_panel
+library(estimatr)
+
+summary(model_1 <- lm_robust(status_1 ~ inbreeding+pta_protein_lb+pta_pl+pta_type+
+                         w_pta_protein_lb+w_pta_pl+w_pta_type+
+                         pta_protein_lb_sire+pta_pl_sire+pta_type_sire,
+                         fixed_effects = ~farm_name+period, 
+                        data = naab_panel, se_type = "stata"))
+
+```
+```{r}
+naab_aiss |>
+  mutate(status_1 = ifelse(status == "G", 1, 0)) |>
+  filter(yob > 2006 & !is.na(farm_name)) |>
+  group_by(reg_id) |>
+  arrange(period) |>
+  slice_head(n = 1) |>
+  ungroup() |>
+  distinct(reg_id, .keep_all = TRUE) ->
+  naab_first
+
+summary(model_2 <- lm_robust(status_1 ~ inbreeding+pta_protein_lb+pta_pl+pta_type+
+                         w_pta_protein_lb+w_pta_pl+w_pta_type+
+                         pta_protein_lb_sire+pta_pl_sire+pta_type_sire,
+                         fixed_effects = ~farm_name+yob, 
+                        data = naab_first, se_type = "stata"))
+```
+```{r}
+library(fixest)
+
+model_3 <- feglm(status_1 ~ inbreeding+pta_protein_lb+pta_pl+
+                           pta_type+w_pta_protein_lb+w_pta_pl+w_pta_type+
+                           pta_protein_lb_sire+pta_pl_sire+
+                           pta_type_sire|farm_name+yob, 
+                 family = binomial(link = "logit"), 
+                 panel.id = ~reg_id + year, 
+                 data = naab_first)
+model_3
+```
+
+
+```{r}
+naab_aiss |>
+  group_by(reg_id) |>
+  arrange(period) |>
+  slice_head(n = 1) |>
+  ungroup() |> 
+  group_by(year_proof) |>
+  summarise(milk_mean = mean(pta_milk, na.rm = TRUE),
+            milk_sd = sd(pta_milk, na.rm = TRUE),
+            N = n()) |>
+  ggplot(aes(x = year_proof, y = milk_mean)) + 
+  geom_line(color = "darkgreen") + 
+  geom_point(color = "darkgreen") + 
+  geom_ribbon(aes(ymin = milk_mean-1.96*milk_sd/sqrt(N), 
+                  ymax = milk_mean+1.96*milk_sd/sqrt(N)),
+              alpha = 0.15) +
+  theme_minimal() + 
+  geom_vline(xintercept =  2009, linetype = 2) +  
+  xlab("Year of first proof") + 
+  ylab("Average Milk yield PTA") + 
+  scale_x_continuous(breaks = seq(2000, 2020, 5))
+```
+
+
+
+```{r}
+tbl <- c(pta_milk = "Milk yield",
+         pta_fat = "Fat yield",
+         pta_protein = "Protein yield",
+         pta_scs = "Somatic Cell Score",
+         pta_pl = "Productive life", 
+         pta_dpr = "Daughter Pregnancy Rate")
+
+naab_aiss |>
+  group_by(reg_id) |>
+  arrange(period) |>
+  slice_head(n = 1) |>
+  ungroup() |> 
+  group_by(year_proof) |>
+  summarise(pta_milk = mean(pta_milk, na.rm = TRUE),
+            pta_fat = mean(pta_fat_lb, na.rm = TRUE),
+            pta_protein = mean(pta_protein_lb, na.rm = TRUE),
+            pta_scs = mean(pta_scs, na.rm = TRUE),
+            pta_pl = mean(pta_pl, na.rm = TRUE),
+            pta_dpr = mean(pta_dpr, na.rm = TRUE)) |>
+  pivot_longer(-year_proof, names_to = "pta", values_to = "values") |>
+  ggplot(aes(x = year_proof, y = values, group = pta)) + 
+  geom_point(aes(color = pta), size = 3) + 
+  geom_line(aes(color = pta), linewidth = 1) + 
+  theme_classic() + 
+  theme(legend.title = element_blank(),
+        legend.position = "none") +
+  geom_vline(xintercept =  2009, linetype = 2) +
+  facet_wrap(.~pta, scales = "free_y", labeller = labeller(pta = tbl)) +
+  xlab("Year of first proof") + 
+  ylab("Average value of trait") + 
+  scale_x_continuous(breaks = seq(2000, 2020, 5))
+```
+
+```{r}
+tbl <- c(milk = "Milk yield",
+         fat = "Fat yield",
+         protein = "Protein yield",
+         scs = "Somatic Cell Score",
+         pl = "Productive life", 
+         dpr = "Daughter Pregnancy Rate")
+
+alpha <- qnorm(0.95)
+
+naab_aiss |>
+  group_by(reg_id) |>
+  arrange(period) |>
+  slice_head(n = 1) |>
+  ungroup() |> 
+  group_by(year_proof) |>
+  summarise(milk_m = mean(pta_milk, na.rm = TRUE),
+            milk_sd = sd(pta_milk, na.rm = TRUE),
+            fat_m = mean(pta_fat_lb, na.rm = TRUE),
+            fat_sd = sd(pta_fat_lb, na.rm = TRUE),
+            protein_m = mean(pta_protein_lb, na.rm = TRUE),
+            protein_sd = sd(pta_protein_lb, na.rm = TRUE),
+            scs_m = mean(pta_scs, na.rm = TRUE),
+            scs_sd = sd(pta_scs, na.rm = TRUE),
+            pl_m = mean(pta_pl, na.rm = TRUE),
+            pl_sd = sd(pta_pl, na.rm = TRUE),
+            dpr_m = mean(pta_dpr, na.rm = TRUE),
+            dpr_sd = sd(pta_dpr, na.rm = TRUE),
+            N = n(),
+            milk_min = milk_m-alpha*milk_sd/sqrt(N), 
+            milk_max = milk_m+alpha*milk_sd/sqrt(N),
+            fat_min = fat_m-alpha*fat_sd/sqrt(N), 
+            fat_max = fat_m+alpha*fat_sd/sqrt(N),
+            protein_min = protein_m-alpha*protein_sd/sqrt(N), 
+            protein_max = protein_m+alpha*protein_sd/sqrt(N),
+            scs_min = scs_m-alpha*scs_sd/sqrt(N), 
+            scs_max = scs_m+alpha*scs_sd/sqrt(N),
+            pl_min = pl_m-alpha*pl_sd/sqrt(N), 
+            pl_max = pl_m+alpha*pl_sd/sqrt(N),
+            dpr_min = dpr_m-alpha*dpr_sd/sqrt(N), 
+            dpr_max = dpr_m+alpha*dpr_sd/sqrt(N)) |>
+  select(c(year_proof, milk_m, milk_min, milk_max, 
+           fat_m, fat_min, fat_max,
+           protein_m, protein_min, protein_max,
+           scs_m, scs_min, scs_max, pl_m, pl_max, pl_min,
+           dpr_m, dpr_min, dpr_max)) |>
+  pivot_longer(-year_proof, names_to = "pta", values_to = "values") |>
+  separate(pta, into = c("variable", "stat"), sep = "_") |>
+  pivot_wider(id_cols = c("year_proof", "variable"), 
+              names_from = "stat", values_from = "values") |>
+  ggplot(aes(x = year_proof, y = m, group = variable)) + 
+  geom_point(aes(color = variable), size = 3) + 
+  geom_line(aes(color = variable), linewidth = 1) + 
+  geom_ribbon(aes(ymin = min, ymax = max), alpha = 0.35) +
+  theme_minimal() + 
+  theme(legend.title = element_blank(),
+        legend.position = "none") +
+  geom_vline(xintercept =  2009, linetype = 2) +
+  facet_wrap(.~variable, scales = "free", labeller = labeller(variable = tbl)) +
+  xlab("Year of first proof") + 
+  ylab("Average value of trait") + 
+  scale_x_continuous(breaks = seq(2000, 2020, 5))
+```
+
+
+
+
+
+
+
+
+
+
