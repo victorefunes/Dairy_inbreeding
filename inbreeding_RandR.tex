@@ -1,0 +1,837 @@
+\documentclass[12pt,letterpaper]{article}
+\usepackage{setspace}
+\usepackage{scalerel}
+\usepackage{blindtext}
+%\linespread{1.5} 
+\usepackage{amsmath, amsthm, amsfonts, amssymb}
+\DeclareMathOperator*{\rint}{\ThisStyle{\rotatebox{15}{$\SavedStyle\!\int\!$}}}
+\usepackage{indentfirst}
+\usepackage[colorlinks=true,linkcolor=black,urlcolor=blue,citecolor=black]{hyperref}
+\usepackage{bm}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage{epstopdf}
+\usepackage{xurl}
+\doublespacing
+\usepackage{newpxtext}
+\usepackage{float}
+\usepackage{pgfplots}
+\usepackage[affil-it]{authblk}
+\pgfplotsset{compat=1.16}
+\usepackage{dcolumn}
+\usepackage{booktabs}
+\usepackage[osf]{mathpazo}
+\usepackage{afterpage}
+%\usepackage[default]{lato}
+\usepackage[makeroom]{cancel}
+\usepackage{listings}
+\usepackage{lscape}
+%\usepackage[left=2cm,right=2cm,top=1.5cm,bottom=1.5cm]{geometry}
+\usepackage[margin=1in]{geometry}
+\usepackage{etoolbox}% http://ctan.org/pkg/etoolbox
+\BeforeBeginEnvironment{tabular}{\footnotesize}% Adjust tabular font size to \small
+
+%% BibTeX settings
+\usepackage[square,sort,comma,numbers]{natbib}
+\bibliographystyle{apalike}
+\bibpunct{(}{)}{,}{a}{,}{,}
+
+% Defines columns for tables
+\usepackage{array}
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+
+\definecolor{blue}{RGB}{0,114,178}
+\definecolor{red}{RGB}{213,94,0}
+\definecolor{yellow}{RGB}{240,228,66}
+\definecolor{green}{RGB}{0,158,115}
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\hypersetup{
+	colorlinks=false,
+	linkbordercolor = {white},
+	linkcolor = {blue}
+}
+
+\renewcommand*{\Authsep}{, }
+\renewcommand*{\Authand}{, }
+\renewcommand*{\Authands}{, }
+%\renewcommand*{\Affilfont}{\normalsize}
+\renewcommand*{\Authfont}{\bfseries}    % make author names boldface    
+\setlength{\affilsep}{2em}   % set the space between author and affiliation
+
+\title{Information technology and coordination failure: The impact of genomic testing on the dairy industry} 
+\author[1]{Victor Funes-Leal}
+\author[2]{Jared Hutchins}
+\affil[1]{Department of Agricultural Economics and Agribusiness\\ University of Arkansas} 
+\affil[2]{Department of Agricultural and Consumer Economics\\ University of Illinois Urbana Champaign} 
+
+
+
+\date{} %date not required
+
+\begin{document}
+\maketitle
+
+% {\small \begin{center}Link to the latest version: 
+
+% \url{https://victorefunes.github.io/files/job-market-paper.pdf}\end{center}}
+
+\begin{abstract}
+    \noindent
+    \singlespacing
+    
+    We estimate the impact of a new information technology, genomic selection, on the market for dairy cattle genetics in the United States. 
+    Genomic selection allows cattle breeders to test new cattle as soon as they are born for the presence of desirable, productive traits and more than double their pace of genetic improvement in milk production.
+    At the same time, the rate of inbreeding, the extent to which dairy bulls are related to one another, greatly increased after the introduction of genomic testing.
+    % Inbreeding is an example of a negative externality in the cattle genetics industry since higher inbreeding rates expose the industry to more disease risk and depressed yields in future generations, costs not borne directly by the breeder in the short run.
+    Using a data set of bulls marketed in the US from 2000 to 2020, we examine whether inbreeding rates increased due to increased competition for popular dairy cattle families in the face of greater market competition.
+    We employ a difference-in-difference and matching approach, finding that inbreeding increased significantly in already popular families after the introduction of genomic testing, compared to less popular families with similar production and health traits.
+    Our estimation shows that the increased inbreeding rate of American bulls caused the entire industry to lose between 3.6 and 6.7 billion dollars from 2011 to 2019 <though the industry also gained X amount>. 
+    % Solving this externality will require either a mechanism to internalize the harmful effects, such as paying a much higher price for more inbred sires, or a collective action mechanism to select which lines will be bred in the next generation.
+\end{abstract}
+
+\newpage
+\section{Introduction\label{sec:intro}}
+The US plays a crucial role in the global dairy sector as one of the world's largest suppliers of dairy bull genetics.
+In 2022, the United States alone exported \$295 million of bovine semen, representing 47\% of the world's exports in value terms (Figure \ref{fig:semen_exp}).
+% Thus, the health and quality of the US cattle genetics gene pool are important to the US livestock industry and livestock industries worldwide.
+For about six decades, milk production per cow has consistently increased in the US herd, and it is estimated that more than half of this growth can be attributed to improvements in cattle genetics \citep{cdcbimpact}.
+Thus, the efforts of US breeders have likely had substantial impacts on the global dairy industry.
+
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.8\textwidth]{figures/semen_exports.png}
+    \caption{Share of trade Value of Bovine Semen exports by country (2019)\\ \small \textbf{Source}: UN Comtrade database}
+    \label{fig:semen_exp} 
+\end{figure}
+
+US dairy breeders improve cow milk yield by identifying which bulls have the most productive female offspring and then continuing to breed off these lines.
+The speed of this genetic improvement has previously been limited by biological factors. 
+Determining whether a bull had good milk production ability took at least five years since the bull had to have offspring born from their use on dairy farms, and those offspring would need to take two years to grow to production age.
+
+However, these limits became less binding after the advent of an innovation in testing technology: genomic testing.
+Introduced in 2008, genomic testing allows breeders to link each animal's genes to productive outcomes such as milk yield and fat yield.
+The practical upshot is that determining a dairy bull's quality can now be done as soon as it is born instead of in five years.
+There are two important, documented impacts of genomic testing on the dairy bull market.
+First, the pace of genetic improvement has more than doubled in dairy cattle since breeders can find productive bulls at much younger ages and breed new generations even quickly.
+Second, dairy companies have more than doubled the number of bulls for sale on the market since young bulls produce less semen than older animals; therefore, more animals are required to meet revenue goals.
+
+% Because genomic testing allows faster genetic discovery, some scientists theorized that it would decrease inbreeding, measured as the degree of relatedness of an animal to all others, as more diverse sets of genetics are discovered and incorporated into the gene pool.
+\begin{figure}
+\centering
+\includegraphics[width=0.8\textwidth]{figures/tpi.png}
+\caption{Dairy Bull Productivity versus Inbreeding Rate\\ \small \textbf{Source}: National Association of Animal Breeders (TPI)\\ and Canadian Dairy Network (Inbreeding rate)}
+\label{fig:tpi}
+
+\end{figure}
+
+The introduction of genomic testing has coincided with a less desirable outcome: an increase in inbreeding, the degree to which a dairy bull is related to the rest of the dairy cattle population.
+Figure \ref{fig:tpi} shows the average inbreeding rate of dairy bulls on the market alongside the total productivity index (TPI), a measure of overall genetic performance value\footnote{TPI is an economic value-weighted average of a set of $m$ genetic traits: $H=\sum_{j=1}^{m}p_{j}g_{j}$, where $p_{j}$ and $g_{j}$ are the economic values and breeding values of trait $j$ \citep{Melton_Heady_Willham1979}}. 
+
+Excessive inbreeding is an example of a coordination failure in the cattle genetics industry. 
+Dairy producers are incentivized to increase the quality of their bulls by either inbreeding or outcrossing. 
+Inbreeding captures a larger market share from their competitors by producing more quality, but doing so depletes their own stock of genetic diversity.
+By outcrossing and using another company's genetic stock, they can replenish their own genetic diversity but gain less market share because their quality improvement will be lower.
+These dynamics incentivize dairy breeders to inbreed more than would be beneficial to the industry because it is costly to outcross when the rest of the industry inbreeds.
+Because their own inbreeding makes outcrossing less valuable for firms that may want to use those lines, individual breeders also do not fully consider the costs of their own inbreeding decision.
+The result is that inbreeding is done more often in the industry than would be socially optimal.
+
+Excessive inbreeding is harmful to the industry because it slows growth in genetic quality and can cause costs down the road that can seriously harm the dairy industry.
+In one case, breeding excessively from a famous dairy bull ``Pawnee Farm Arlinda Chief'' led to more than 500,000 spontaneous abortions and nearly 420 million dollars in losses because of an undesirable, recessive trait that was passed to his offspring \citep{Adams2016}. 
+Given the US's role in the global cattle genetics market, reducing the diversity of the dairy cattle gene pool could damage livestock markets worldwide.
+
+In this paper, we examine whether the introduction of genomic testing increased inbreeding by increasing the returns to inbreeding relative to outcrossing for bulls who were well known in the industry.
+Genomic testing significantly increased the returns to inbreeding on these lines because, being the most widely used, the information gain from sequencing these lines was highest.
+Since genomic testing also expanded the number of bulls on the market, competitive forces could also have led animal breeders to increase market share by crossing already popular lines instead of finding new sources of genetics.
+Since well-known bulls are most likely to also be high quality, we construct a set of counterfactual bulls that are comparable to the popular genetic families in terms of productivity using propensity score matching.
+Using a difference-in-difference approach, we then examine inbreeding rates in popular families relative to our counterfactual families before and after the introduction of genomic testing in 2010.
+If genomic testing increases competition for quality lines independent of popularity among dairy farmers, we expect that inbreeding rates for these two groups will be the same before and after its introduction.
+
+We find that popular dairy bull lines became more inbred after the introduction of genomic testing than our counterfactual.
+The inbreeding rate of the most popular lines increased by 1-2.8 percentage points relative to our control group after 2010.
+Before genomic testing, there was no statistically significant difference in inbreeding rates across our groups.
+Using a rough estimate of the costs of inbreeding from the breeding association Holstein USA, a back-of-the-envelope calculation implies that, on net, the benefits of inbreeding outweighed the costs for this group: the increase in inbreeding led to approximately \$3.6-6.7 billion in losses to the industry from 2011 to 2019 while the benefits totalled <X>.
+
+% Inbreeding depression is a negative externality that genetics companies inflict upon each other because of breeding more closely related bulls. According to the Holstein Association of the United States, each additional percent point of inbreeding rate leads to a \$23 revenue loss per cow. We estimate that increased inbreeding has led to around three to six billion dollars of losses for the industry annually since 2012. 
+
+This article fills a critical gap in the literature on livestock markets and the behavior of animal breeders.
+Few economics papers analyze the strategic actions of animal breeders, and even fewer analyze how their actions may impose costs on the industry.
+Early modeling of the animal breeder's decision dates back to studies such as \citet{ladd1978}, \citet{Kerr1984}, and \citet{Melton1994} which use hedonic regression and linear programming to determine the implicit market value of different livestock traits.
+\citet{Richards1996} and \citet{Schroeder1992} apply this method to dairy bulls to determine the economic value of each dairy bull trait implied by the results of a hedonic regression.
+Thus far, the economics literature has not appreciated how the decisions of animal breeders may lead to worse outcomes for the whole sector.
+
+However, a related literature in agricultural economics has explored similar coordination problems among farmers controlling pests or disease.
+In the short run, farmers are incentivized to forgo the costs of controlling a future pest or disease because of a strong incentive to free-ride off of the efforts of others.
+This has been documented in the case of planting Bt-resistant crops \citep{epanchin2015individual,brown2018voluntary,wechsler2018has,livingston2004managing} and managing citrus greening \citet{lence2023does}. 
+
+Even in the absence of explicit externalities, individual, profit-maximizing firms can find themselves in situations where product quality would be improved by coordination despite not being individually rational.
+Our paper is the first to explore such a coordination problem in the market for dairy cattle genetics.
+Breeders are incentivized in the short run to increase inbreeding by breeding cattle from famous lines, which may boost genetic improvement and capture more market share.
+However, inbreeding expends a type of resource, genetic diversity, that is needed to keep genetic improvement growing over time.
+Yet, it is individually rational to breed more than is socially optimal to maintain their market share by producing the bulls with the highest quality \citep{Cole2019}.
+The welfare loss occurs because maintaining a firm's genetic diversity is beneficial to the entire industry since other firms can use it to restore their own diversity.
+However, an individual firm does not consider this benefit, leading to a slower rate of genetic improvement in the long run.
+
+%Specifically, the few economics papers on the dairy genetics market have so far missed an important development in the US dairy herd: the rise of inbreeding.
+%Inbreeding in this context is an example of a negative ``network externality.''
+%Network externalities were defined by \citep{Katz1985} as usually positive externalities that result from increasing a product's user base.
+%For example, a technology may become more valuable to a user as the user base grows and the user network has more connections.
+%Thus, the more dense the network is, the greater the potentially positive externality.
+
+%However, instead of causing a positive externality, inbreeding causes a negative externality by exposing the network to a greater chance of harmful recessive traits and weakening the genetic pool's resiliency.
+
+Before its introduction, it was theorized that genomic testing would \textbf{decrease} inbreeding by allowing breeders to find productive dairy bulls outside known genetic lines more easily \citep{Daetwyler2007}. 
+Instead, we find that the average inbreeding coefficient of dairy bulls increased along with dairy bull productivity.
+In our conceptual framework, we explore how genomic testing increases the returns to inbreeding and likely decreases the amount of genetic diversity in the entire industry.
+We provide evidence of this theory by comparing the inbreeding rates of groups of bulls that are similar in genetic traits but different in popularity before and after genomic testing.
+If genomic testing led to an increase in the discovery of less popular lines, we should expect no difference in the inbreeding rates of these groups since animal breeders would have selected them only on the basis of their genetic traits.
+Instead, we find that genetic lines already popular before genomic testing experienced an increase in the average inbreeding rate, leading to significant economic damage to the dairy sector.
+
+While we estimate that inbreeding led to as much as 6.7 billion dollars in damages for the sector, we also find that it is likely that the increases in milk productivity made up for the damages.
+We estimate that the net benefits of genomic testing may have been as high as 10.4 billion dollars due to an increase in milk production.
+Yet, the potential welfare losses could still be significant since less genetic diversity will ultimately slow genetic improvement in the long run.
+Moreover, the lower genetic diversity becomes, the more risk there is of unknown recessive traits causing significant damage to genetic lines <citations>.
+
+% there are no other papers that analyze inbreeding as a \textbf{network externality} \citep{Liebowitz1994}, \citep{Katz1985}, where companies enjoy the benefits (faster genetic gains) and suffer the costs (decreased fertility caused by the increased frequency of deleterious mutations) from changes in the size of their associated network. In this case, the pedigree (relatedness) is the force that binds all the nodes in the network, where two animals are part of the same network (line) if they descend from the same ancestor. Similarly, all articles that analyze the market for cattle genetics, such as \cite{Kerr1984}, \cite{Melton1994}, \cite{Richards1996} or \cite{Schroeder1992} study cattle as a closed system and their objective was to determine what are the implicit prices of each genetic trait using hedonic methods. These early papers then focus on the decisions taken by individual breeders or dairy farmers without paying attention to their broader impact.
+
+The paper is structured as follows: Section \ref{sec:concept_frame} presents background and a conceptual model exploring how introducing genomic selection can lead to higher inbreeding rates in subsequent generations of dairy bulls. Section \ref{sec:data_description} explains the data sources and shows descriptive statistics. Section \ref{sec:emp_frame} outlines the identification strategy and methodological framework. In section \ref{sec:results}, we explain the results before doing a cost-benefit analysis in section \ref{sec:cost}. We conclude in section \ref{sec:discussion} and discuss the implications for the future of the US dairy industry.
+
+% Technological innovations, defined as the set of rules or instructions to combine inputs to produce outputs \citep{Romer1990}, play a significant role in economic analysis as a factor that drives economic growth. 
+% This article investigates the externalities of a new technology that boosts genetic productivity in the dairy industry: genomic selection for bulls. 
+% This new technology increased the productivity of the dairy industry as soon as it was introduced; however, since dairy genetics has a public good aspect related to the existence of a common pool of genes that animal breeders draw from, genomic selection has a negative aspect that leads to billions of dollars of losses to the dairy industry. 
+
+% Animal breeders and genetics companies can identify which bulls (sires) have the highest productivity and transmit it to their offspring, thus increasing the productivity of the next generation of animals. 
+% But it also had a negative consequence: increased inbreeding rates due to breeders mating more closely related animals to undercut each other and ensure a higher market share. 
+% Inbreeding is a negative externality inflicted by breeders on themselves by pursuing short-term gains in genetic performance at the cost of reducing the diversity of the gene pool. 
+
+% %We want to uncover the causal mechanism that fuels increased inbreeding rates and creates a significant cost to the American dairy industry. Are breeders mating more heavily on famous lines? If this is the case, we should see higher inbreeding rates in animals from those well-established families than in other less famous lines. This article shows that a more intense competition to supply high-quality genetics led to higher inbreeding rates and, thus, to billions of dollars of cost for the American dairy industry.
+
+% However, genomic selection was expected to help breeders ``discover" new potentially high-performing sires independent of their ancestry. 
+% Still, something entirely different happened: genetic companies genotyped almost all of their bulls and released them into the market in 2010, thus expanding the number of sires more than threefold. 
+% Due to a much more extensive choice set, the relative value of a line (family) of animals increased as it reduces the quality uncertainty of a new bull whose performance is still unknown. 
+% We can think of this as ``brand loyalty'' towards famous bull families, and the ultimate consequence of this process is an increasing inbreeding rate of all bulls from 2010 onwards.
+
+% Inbreeding leads to a higher prevalence of deleterious genetic conditions that inflict a very high cost on the dairy industry. 
+% This is not the first time that intense selective breeding has pushed the dairy industry to a bad outcome, \cite{Adams2016}, for example, shows that a mutation in a single chromosome that could be traced to a very famous sire called ``Pawnee Farm Arlinda Chief'' led to more than 500,000 spontaneous abortions and nearly 420 million dollars in losses because of a deleterious mutation in a gene that was passed to his offspring. 
+% Genomic selection could have helped breeders find more productive genetic resources outside their gene pool. 
+% However, it had the opposite effect since the incentive mechanism that breeders face makes them compete to supply the most productive bulls, and the best way to breed high-productivity bulls is to pull them from existing famous lines.
+
+% Is it the case that breeders are mating more heavily on famous lines? 
+% If so, we should see higher inbreeding rates in animals from those well-established families than in other less famous lines. Genomic selection has the opposite effect; it helps breeders identify a highly productive bull when the animal is born so it can be marketed as soon as it reaches sexual maturity (one year old versus four to five years with traditional selection.) Genomic selection increased the genetic gains per year due to shortened generation intervals but also led to increased competition in the animal genetics industry; firms that supply bull genetics are under higher pressure to offer more ``efficient"  bulls. The most common way to breed a highly productive sire is through linebreeding, which consists of mating two related animals that are descendants of a famous sire. A consequence of the pervasive use of line breeding, the effective population size\footnote{The number of individuals that an idealized population would need to have for inbreeding rates to be the same as in the actual population.} of bulls is at a historic low ranging from 43 to 66 animals. Now, all animals are, on average, more related to each other due to the pervasive use of linebreeding \citep{Cole2023}.
+
+\section{Conceptual Framework\label{sec:concept_frame}}
+
+\subsection{The Coordination Problem in Dairy Breeding}
+To describe the dynamics of the dairy industry, we present a simplified theoretical model that describes the coordination problem inherent to dairy cow breeding.
+In our theoretical formulation, there is a market made up of $N$ firms and each firm $i$ in time $t$ produces quality $q_{it}$ to earn a share $s(q_{it},q_{-it})$ of dairy industry revenue $R(\bar{Q})$, where $\bar{Q}$ is the average quality produced by all breeders.
+The dairy bull market has poor differentiation enough that dairy farmers roughly treat every dairy bull as equivalent, and thus only pay attention to the amount of $q_{it}$ the firm produces.
+This creates a zero-sum market environment, as a firm $i$ that produces less quality than its competitors ($q_{-it}$) will receive a lower share $s(q_{it},q_{-it})$ of the market revenue $R(\bar{Q})$.
+
+Firms have the option of two actions ($a_{it}$) to increase quality: inbreed ($I$) or outcross ($O$).
+The returns to these options depend either on the genetic diversity of the firm, $d_{it}$, or the genetic diversity of the other firms, $d_{-it}$.
+The actions in time $t$ will determine the quality in time $t+1$: $q_{it+1} = q_{it} + f(a_{it},d_{it},d_{-it})$, where $f$ is:
+
+$$f(a_{it},d_{it},d_{-it}) = \begin{cases}
+\gamma_I \cdot d_{it} & \text{if } a_{it} = I \\
+\gamma_O \cdot d_{-it} & \text{if } a_{it} = O.
+\end{cases}$$
+
+We assume that $\gamma_I>\gamma_O$ because inbreeding extracts more of the value from genetic diversity than outcrossing extracts from someone else's line.
+However, we also assume that choosing $a_i=I$ \textit{depletes} $d_i$ while $a_i=O$ \textit{replenishes} $d_i$ by adding genetic material from other lines.
+We assume the dynamics of $d_{it}$ as:
+
+$$d_{it+1} = \begin{cases}
+\delta \cdot d_{it} & \text{if } a_{it} = I \\
+\min\{(1+\rho)d_{it}, 1\} & \text{if } a_{it} = O
+\end{cases}$$
+where $\delta \in (0,1)$ is a depreciation rate and $\rho >0$ is a replenishment rate. For simplicity, assume that there is some upper limit to $d_{it}$ that we can normalize to 1.
+The firm's tradeoff is whether to inbreed to increase $q_{it+1}$, and thus their revenue share next period $s(q_{it+1},q_{-i,t+1}) R(\bar{Q})$, at the expense of their stock $d_{it}$.
+Outcrossing would restore their genetic stock but might grant market share to their competitors because they will gain less $q_{it}$.
+
+With the most basic cost function, one where a firm pays $\alpha_I$ to inbreed and $\alpha_O$ to outcross, the firm's maximization problem as a Bellman equation would be:
+\begin{align*}
+max_{a \in (I,O)} \quad  V(a,q,d) &= R(\bar{Q}) s(q,q_{-i}) -C(a) + \beta V(q'(a),d'(a)) \\
+\text s.t.&\quad  C(a) = \alpha_I \{a=I\} + \alpha_O \{a=O\}\\
+          &\quad \text{rules of motion for $d$ an $q$}\\
+          \end{align*}
+
+Assuming only two players and two periods, this can be illustrated as a 2x2 game (assuming symmetric $d$ and $q$):
+\begin{center}
+\begin{tabular}{cc|cc}
+& & \multicolumn{2}{c}{Breeder 2}\\
+& & Inbreed & Outcross \\ \hline
+Breeder 1 & Inbreed & R/2,R/2 & $S_H$ R, $S_L$ R \\
+          & Outcross & $S_L$ R, $S_H$ R & R/2, R/2 \\
+\end{tabular}
+\end{center} 
+Where $S_L<1/2<S_H$ because $\gamma_I>\gamma_O$. 
+A potential Nash equilibrium in this case is (I,I), as $I$ would be a profitable deviation when opponent chooses $O$.
+To be more exact, the condition for deviating to $O$ when opponent chooses $I$ is something like:
+
+$$\frac{\alpha_I - \alpha_O}{\beta} > R(\bar{Q}_{II})\frac{1}{2} - R(\bar{Q}_{OI})s_L.$$
+
+where $\bar{Q}_{II}$ is the amount of quality when both players choose $I$. 
+Because $\gamma_I>\gamma_O$, $\bar{Q}_{II}>\bar{Q}_{OI}$ and, since $S_L<1/2$, the right-hand side of the condition must be more than 0.
+Thus, the only time outcrossing would be profitable is when inbreeding is most costly than outcrossing, $\alpha_I>\alpha_O$, and the quality gain from inbreeding is sufficiently small.
+Since inbreeding reduces gains over time due to inbreeding depression, more realistically we would expect the relative gain from inbreeding to decline at lower levels of $d$ (i.e. a non-linear form for the gain function $f$) 
+
+The actions of both players will impact the aggregate diversity stock, $\bar{d}$.
+If each player inbred every periods, we would see $\bar{d} \rightarrow 0$, which would lead to genetic improvement stagnating without any recovery.
+However, if inbreeding is more costly than outcrossing and the gains to inbreeding eventually slow, players would likely not let $d$ drop below a threshold level, call it $d^{ME}$ for ``market equilibrium.''
+
+Compare this to what we would assume a social planner would choose to maximize the discounted stream of welfare.
+Imagine that the social planner picks the level of genetic diversity $d$ and that the welfare maximizing value is $d^*$.
+We would contend that $d^*>d^{ME}$, meaning that the market equilibrium chooses a socially inefficient level of genetic diversity.
+When a firm outcrosses, it benefits the firm but also the entire industry by improving the benefit of outcrossing for all firms.
+The social planner takes into account both of these benefits while the firm only considers its benefit to its own stock, leading to a higher stock of genetic diversity in the long run.
+The resulting welfare loss is $W(d^*)-W(d^{ME})$, resulting from the fact that firms use more diversity than is socially optimal to stay ahead of their competitors.
+
+\subsection{The Effect of Genomic Testing}
+Genomic testing allows dairy breeders to determine the genetic traits of dairy bulls far more quickly than before.
+Before it was introduced, it took five years to determine a dairy bull's genetic traits.
+Once the bull reached sexual maturity around the age of one year, the bull's semen would be frozen and sent to several farms to produce offspring from the bull.
+After about 10 months, the offspring would be born and would take roughly another two years to get to production age. 
+After a few years of production, the bull now has production data from its offspring that can be used to calculate its genetic traits, in our model $q$.
+
+Genomic testing gathers the same information in a far shorter amount of time by taking a DNA sample of the bull and correlating its individual genes to traits.
+After the first several bulls were sequenced, the test then became most accurate for other bulls related to the first bulls that were sequenced.
+Intuitively, the bulls that were sequenced were ones that were already popular on the market since these bulls are more widely used and have the greatest information gain for the market as a whole. 
+Thus, genomic testing became most valuable for bulls that share genetic material with the already popular bulls.
+
+In terms of our model, genomic testing caused an acceleration in the rate of quality gain, that is an increase in $\gamma_I$ and $\gamma_O$.
+In the case that they both increase the same amount, there would be no change in $d^{ME}$ since the relative benefits of inbreeding have not changed.
+However, in theory, genomic testing disproportionately benefits inbreeding because genomic testing has less parts of the genome to correlate to performance in a population that shares more DNA.
+In the model, this would increase $\gamma_I$ relative to $\gamma_O$ and lead to a new ``genomic'' market equilibrium level of genetic diversity, $d^{GE}<d^{ME}$.
+Since inbreeding is now more valuable, we would expect that the new social planner optimum is also lower, $d^{**}<d^*$.
+
+Whether genomic testing actually leads to a higher welfare loss depends on i) how much genomic testing decreases $d^{GE}$ and $d^{**}$ and ii) the relationship between $W$ and $d$.
+If $d^* - d^{ME} < d^{**} -d^{GE}$, that is the diversity gap increased, then genomic testing causes a net welfare loss if welfare is improved if $W'(d)>0$ or diversity increases welfare.
+If $d^* - d^{ME} = d^{**} -d^{GE}$, the welfare impact of genomic testing depends on whether $d$ is linear or concave in $W$.
+If $d$ is linear in $W$, then $W(d^{**}) - W(d^{GE}) = W(d^{*})-W(d^{ME})$, meaning the welfare loss is unchanged.
+However, if $d$ is concave in $W$, then $W(d^{**}) - W(d^{GE}) > W(d^{*})-W(d^{ME})$, since they are at lower values.
+Since inbreeding depression would cause the benefits of inbreeding to erode over time, this is most consistent with $d$ being non-linear in $W$.
+
+The primary prediction of this model is that the introduction of genomic testing increases inbreeding, which potentially exacerbates a welfare loss in the industry.
+The welfare loss is derived from the fact that breeders excessively inbreed to stay ahead of their competitors, despite the fact that this depletes genetic diversity and leads to less growth in aggregate quality over time.
+In the industry, we have reason to believe that genomic testing increased the returns to inbreeding most for the lines that were the most popular before its introduction.
+Since most bulls would share DNA with these lines, testing their DNA would reveal
+
+
+
+% \subsection{The Animal Breeders' Problem}
+% % Selective breeding has been practiced since prehistoric times; however, the discovery of inheritance mechanisms and genetics in the 19$^{th}$ and 20$^{th}$ centuries allowed breeders to identify the link between desired traits in animals and their inheritance mechanisms \citep{Lush1937}.
+% To produce the next generation of milking cows, dairy farms must choose a bull to breed with their current cows. Since breeding in the dairy sector is almost entirely done through artificial insemination, dairy farmers must buy semen from a bull that is likely to produce offspring with good productivity and health.
+
+% The dairy cattle genetics market is segmented by sex. Farmers rarely keep bulls because they do not derive revenue from them, and can only be used to impregnate cows that are not to them in a single generation. On the other hand, supply is comprised of a set of firms, which we call ``breeders'', that select bulls based on their genetic traits, since their revenue depends on the relative improvement of an animal's traits with respect to the average bull recorded in the same herd, year, and season \citep{Simm2020}, called the \textbf{merit} of a bull.
+
+% The selection of bulls takes place in a two-step process: first, animals with the highest genetic merit are identified. Before the introduction of genomic selection, breeders relied on pedigree information to identify the most promising animals. The genetic traits are calculated by the Council on Dairy Cattle Breeding (CDCB) using data on dairy cows enrolled in Dairy Herd Improvement Associations (DHIAs) \citep{Hutchins_Hueth2023}.
+
+% Once a bull has enough offspring in the DHIA system, the CDCB will release this trait publicly to the industry.
+% Because of the biological lags of cattle production, it takes roughly five years for a dairy bull, once born, to have enough data for a ``daughter-proven'' evaluation.
+
+% After these animals are chosen, their genetics are released into the market, where dairy farmers determine which bulls have the highest merit by looking at the genetic traits of each animal.
+
+% Genomic testing changed this mechanism substantially. After the sequencing of the bovine genome, breeders only need a sample of the genetic material from a calf to identify their \textbf{Genomic Breeding Values}, which can be obtained as soon as the animal is born. Then it takes from 9 to 12 months for the bull to reach sexual maturity, which is necessary to produce a commercially viable volume of sperm, which continues to increase for the next two years.
+
+% The product supplied by animal breeders is, in essence, an inseparable bundle of genetic traits \citep{Melton_Heady_Willham1979} and \citep{Melton1994} model the breeder's decision as being paid based on how much higher their bull's traits are than the population average, which views all bulls as interchangeable to farmers apart from their genetic traits. 
+
+% To some degree, this makes animal breeding a zero-sum game. To maximize profits, breeders must release bulls into the market with the highest possible trait values to grab market share from other breeders.
+% To market semen to farmers, breeders sell their semen through dairy genetics companies, which are either cooperatives owned by dairy farmers or investor-owned.
+% On the demand side, dairy farmers choose bulls from the market\footnote{It is common practice to work with ``breeding consultants'' who choose bulls based on criteria defined by dairy farmers, excluding them from the model does not change our conclusions.} to maximize their own profits.
+% Since bull semen is shipped frozen, dairy farmers have a significant range of choice in bulls, which is not restricted by the bull's location.
+
+% When breeding animals to produce new bulls for sale, breeders can decide how closely related they want the bull and cow to be.
+% If the bull and cow are closely related, this is called ``line breeding'' since the breeder is making crosses within the same line or genetic lineage. 
+% Crossing a bull and a cow that are more distantly related is often referred to as ``outcrossing.''
+% The advantages of line breeding are that it allows breeders to increase the probability that the traits of their common descendant will continue to be expressed in future generations.
+% For example, if a bull and a cow are both closely related to a bull with good traits, then the good traits are more likely to be expressed.
+% As a result of line breeding in dairy farming, nearly all Holstein dairy bulls can be traced back to three dairy bulls born in the 1960s \citep{Yue2015}.
+
+% The disadvantage of line breeding is that it also increases the probability that the descendants will express a recessive trait that causes damage.
+% Since the goal of linebreeding is to keep the degree of relationship with respect to a relative constant across the generations of his descendants, it leads to higher inbreeding rates.
+% As the inbreeding rate of the dairy cow population increases, the likelihood of unforeseen genetic traits that could harm the industry also rises.
+% In the short run, trait gain in an inbred population will also be lower because of ``inbreeding depression'' \citep{gutierrez2022review,Smith1998}.
+
+% The level of inbreeding of an individual $i$ is measured with the \textbf{inbreeding coefficient}, which is determined by the degree of closeness of its parents, i.e. an animal has zero inbreeding if both its parents are entirely unrelated, and one if the animal is the result of a mating of two siblings. This coefficient is calculated from the animal's pedigree, hence the importance of keeping track of their family trees, and is calculated by the NAAB when the animal is registered (but can be estimated by the breeder before the mating).
+
+% The primary advantage of outcrossing is that it lowers the probability of undesirable recessive traits in the long run. Its primary disadvantage, however, is a potentially slower gain in genetic traits.
+% If the existing lines have desirable production ability, outcrossing can dilute production ability by introducing new genetic material instead of honing in on one line's benefits.
+
+% When deciding to line breed or cross breed, breeders have to decide whether to benefit in the short run with potential long-run costs to their genetic lines versus foregoing short-run gains in genetics to increase the resiliency of their lines.
+% The long-run costs of line breeding, however, are not directly borne by the breeder.
+% While breeders will experience devaluation in the genetic traits through inbreeding depression, they will not necessarily pay the cost of increasing the probability of damaging recessive traits in their lines.
+% Since breeders also use each other's lines, propagating recessive traits is a cost imposed on the entire industry.
+
+% From the perspective of an efficient social planner, there is a certain efficient level of outcrossing in dairy bulls to continue genetic gain while maintaining genetic diversity at a safe level.
+% A similar solution was developed in the planting of Bt crops to control resistance to the European corn bore.
+% Starting in 1995, the Environmental Protection Agency in the US government began mandating that farmers plant ``refuge'' seed without Bt resistance alongside Bt resistant seed \citep{bourguet2005regulating}. 
+% The purpose of mandating refuges is to allow insects that are not resistant to Bt to survive and breed with Bt-resistant insects and reduce the level of resistance in the insect population.
+% While farmers are individually incentivized to control Bt resistance, they do not completely internalize the costs of planting too little refuge seed since resistant insects can spread to other farms.
+% Private seed companies now help farmers comply with this regulation by mixing non-resistant seed into the bags of seed they sell (called ``refuge-in-a-bag'') \citep{mohan2018refuge}.
+
+% Similar to the planting of Bt corn, dairy breeders are not necessarily incentivized to maintain a level of genetic diversity in their industry.
+% In fact, the zero-sum nature of animal breeding described by \citet{Melton1994} would incentivize dairy breeders to invest too little in genetic diversity if the marginal returns to line breeding are higher in the short run.
+% This is because if a breeder decides to cross-breed when the rest of the industry line breeds, they will lose future market share by delivering less genetic gain than the rest of the industry.
+% Moreover, if some dairy farmers prefer specific lines over others, breeders can capture market share by continuing to breed off of the same lines to maintain the purity of the genetic line and the farmer's ``brand loyalty.''
+
+% \subsection{The Impact of Genomic Testing}
+% The impact of genomic testing on the decisions of dairy breeders depends on a handful of factors \citep{Kerr1984}\footnote{These factors are related through the ``breeder's equation'': \begin{equation}
+%     \text{Trait Improvement} = \frac{\text{Heritability}\times \text{Selection Intensity}\times sd_{trait}}{\text{Generation Interval}}\label{eq:1}
+% \end{equation}}:
+
+% % Explain the breeder's equation with words in economist's terms
+% % Re-calculate Net merit and genomic inbreeding
+
+% \begin{itemize}
+% \item \textbf{Trait Improvement}: change in a trait (e.g., milk production) in the new generation compared to the previous generation.
+% \item \textbf{Heritability} measures the degree to which an offspring can ``inherit'' the trait from their parents.
+% \item \textbf{Selection Intensity}: difference between the traits of the animals selected for breeding and those of the general population, representing how ``selective'' breeders are in the new generation.
+% \item \textbf{Generation Interval}: amount of time between generations, which is determined by how long it takes to determine the traits of the new generation.
+% \item \textbf{Trait variability}: standard deviation of measured traits in a cohort.
+% \end{itemize}
+
+% The rate of change of genetic traits is determined exogenously by the heritability of the trait but endogenously by i) how good breeders are at finding bulls with better traits (selection intensity) and ii) how fast they can ``prove'' that bull to use for breeding more future bulls (generation interval). 
+
+% \cite{Kerr1984} shows that a breeder's problem is to maximize selectivity by choosing animals with the highest possible levels of genetic traits, relative to their contemporaries, to maximize the market value of the bulls they market. In other words, breeders' revenue is the product of the price of an animal, which depends linearly on the selectivity and the quantity sold, hence, the higher the selectivity, the higher the revenue.
+
+% Genomic testing enhances trait improvement by reducing the generation interval and intensifying selection.
+% By using DNA samples, the potential impact of the bull on its offspring can be estimated by taking a DNA sample when it is born.
+% With an accurate enough assessment, the bull can then be marketed and used as soon as it reaches sexual maturity, around two years old (or even younger).
+% This represents a significant reduction in the generational interval, as bulls are not marketed until they are around five years old, based on offspring data.
+% Also, by having a better idea of what a bull's traits are when it's born, breeders can select more precisely the bulls that have the traits they want.
+% This increase in selection intensity enhances the rate of trait improvement.
+
+% The impact of genomic testing on inbreeding depends on how it alters the relative benefits of line breeding versus cross breeding for animal breeders.
+% If genomic testing increased the relative gain of both options equally, there should be no additional increase in inbreeding from genomic testing.
+% However, there are two ways that genomic testing could increase the relative gain of line breeding.
+% First, genomic testing could have made selection more accurate for popular lines than it did less well-known lines.
+% This would mean that the selection intensity of line breeding would have increased more than it would have for outcrossing, resulting in a higher gain in traits for line breeding.
+% Second, the increased number of bulls from genomic testing may have made popular lines more valuable as a way to distinguish bulls in a crowded market.
+% While in \citet{Melton1994} bulls are interchangeable if they have the same traits, ``brand loyalty'' may manifest in the dairy bull market if there is an affinity for certain families of bulls.
+% By line breeding these ``super sires,'' the breeders could capture market share from their popularity alone.
+
+
+
+% Dairy farmers demand genetics to improve their productivity in the next period by choosing the bulls with the best characteristics. However, the traits that constitute an animal are marketed as a "bundle" of traits embedded in each animal. Dairy farmers are only interested in the productivity of their cows because their profits depend on it; they are not directly interested in how inbred their cows are; therefore, inbreeding rates cannot be priced directly as an additional cost to dairy farmers.
+
+% \textbf{Inbreeding} is the mating of individuals more closely related to each other than the average for the population\citep[p.~337]{Bourdon2000}. Inbreeding has two consequences: first, it increases the likelihood that an animal's offspring will perform similarly to its ancestors; for example, if a particularly tall bull is mated with a related cow, its offspring will likely be taller than average because the genes that carry such trait are likely to be present in both parents. Second, it favors the expression of deleterious recessive alleles; since an animal has two copies of a recessive gene from each parent, it is more likely to express any such traits than an outbred animal.
+
+% % \begin{figure}[H]
+% %     \centering
+% %     \includegraphics[width=16cm]{figures/tpi.png}
+% %     \caption{Inbreeding Rates and Total performance Index}
+% %     \label{fig:tpi} 
+% % \end{figure}
+
+% % Figure \ref{fig:tpi} shows the close link between the \textbf{Total Performance Index} (TPI), a weighted average of a series of genetic traits, and the average inbreeding rate. Genomic selection led to an immediate jump in the productivity index but to a lagged response in inbreeding rates because of the gestation length and time to reach maturity that originate the cattle cycle \citep{Rosen1994}, breeding decisions in year $t$, leading to a birth of a new calf in $t+1$, that will be released into the market in year $t+2$. 
+
+% The increment in the rate of change in hereditary traits caused by genomic selection can be decomposed into a set of components: heritability, selection intensity, and generation interval \citep{Kerr1984}. Equation \ref{eq:1} is called the ``breeder's equation":
+
+% \begin{equation}
+%     \text{genetic improvement} = \dfrac{\text{heritability}\times \text{selection intensity}\times \text{trait variance}}{\text{generation interval}}\label{eq:1}
+% \end{equation}
+
+% \textbf{Heritability} is a population parameter specific to each trait that measures the strength of the relationship between the genetic traits of parents and their offspring, and so is the standard deviation of the observed trait values. \textbf{Selection intensity} is the differential in average trait values between selected animals and the general population at a given time. Selection intensity measures how ``choosy" breeders are in deciding which individuals are selected; more intensity of selection means that only the best animals (according to some criterion) are selected to have offspring. If animals were randomly selected, those magnitudes would not differ. The generation interval is the time required to replace one generation with the next: the shorter the interval, the faster the genetic change. Genetic improvement is driven by two forces: selection intensity and generation interval. An increase in selectivity or a decrease in the generation interval increases genetic gains per generation.
+
+% Before 2009, it took one to five years for a bull to father a large enough number of daughters to test them for the presence of genetic traits such as milk, protein, or fat yields. With genomic testing, an animal can be tested as soon as it is born for the presence of specific traits in its genome. Consequently, the generation interval, the average age of parents when offspring are born \citep{Wiggans2022}, has decreased from around five and a half years to less than two years, close to the biological minimum of one year. 
+
+
+% The most important consequence of a shorter generation interval is an increase in genetic progress. Figure \ref{fig:gen_int} also shows that the confidence interval of our estimation of the mean age has widened; we interpret that as evidence of a decrease in the number of daughter-proven bulls. 
+
+% The more genetics companies breed the same lines, the more newborn bulls will be related to a specific ancestor. We define a bull as a supersire in terms of the size of its offspring; since we have records of all male descendants from each sire that have been released on the dairy genetic market, we can then identify which bulls have had the largest offspring; more precisely, a bull born between 1997 and 2007 is a supersire if the size of his offspring is on the 95$^{th}$ percentile of the offspring distribution.
+
+% We test the hypothesis that genomic selection caused higher inbreeding rates by constructing a counterfactual line of bulls that possessed similar traits but were less popular at the introduction of genomics. We identify their descendants and respective inbreeding rates; they increased disproportionately more for the descendants of supersires. A likely explanation for this process is that genetics companies did not invest in the most productive bulls but instead in the most famous lines in an attempt to gain market share. The more companies breed into those lines, the higher the inbreeding rate of the next generation of bulls. This leads to a deterioration of the expected traits of future generations of bulls and, thus, to significant losses for the dairy industry in terms of reduced productivity.
+
+\section{Data Description\label{sec:data_description}}
+
+The National Dairy Herd Improvement Program (NDHIP) collects, manages, and analyzes data from American dairy cattle \citep{Hutchins_Hueth2023}. The information it collects assesses the industry's productivity and estimates the paternal contribution to these traits. The raw data collected from farms are used to estimate a statistical model that predicts the genetic contribution of an animal as a sire (or dam) after controlling for environmental variables such as herd, age, pedigree, and season effects. The predicted values for each trait from this model are commonly called the \textbf{predicted transmitting ability} (PTA) of a trait.
+
+The National Association of Animal Breeders (NAAB), a trade organization representing all of the major livestock genetics companies selling dairy bulls in the United States, publishes the genetic traits of all bulls being sold by their members.
+Traits are posted three times a year at the same time that each bull’s predicted genetic traits are calculated and posted publicly by the Council on Dairy Cattle Breeding (formerly by the USDA) \citep{Hutchins_Hueth2023}.
+Our data comes from the NAAB's published lists from 2001 to 2020 and represents over 15,400 dairy bulls, both foreign and domestic, sold by NAAB members during this period.
+The NAAB represents 95\% of the livestock genetics companies and cooperatives in the US and Canada\footnote{\url{https://www.naab-css.org/history}} , making these data broadly representative of what is sold to US dairy farmers.
+
+
+The genomic-testing program began in 2008, and the first genomically tested bulls had evaluations published in January 2009.
+\citet{garciaruiz2016} finds that, after 2010, the generation interval decreased significantly by about four years.
+Using the list of bulls that are actively sold by members of the National Association of Animal Breeders, we can see in Figure \ref{fig:gen_int} that the new genomically proven bulls, first listed in 2010, have an average age of a little less than two years old when they are first released, versus around five years for daughter-proven bulls.
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=16cm]{figures/generation_interval.png}
+    \caption{Average age at first proof for Holstein bulls\\ \small \textbf{Source}: NAAB}
+    \label{fig:gen_int} 
+\end{figure}
+
+Another impact of genomic testing is an increase in the number of bulls being marketed. 
+Figure \ref{fig:num_bulls} shows that the number of bulls listed as actively sold in the industry tripled starting in 2010. 
+A large increase in the number of bulls implies that search costs to farmers may have increased when deciding which animal to buy genetics from \citep{Stigler1961,Farley1964}.
+In the face of higher search costs, brand loyalty to certain lines may be a way for dairy farmers to reduce their search costs.
+As seen in the plot, genomically-tested bulls soon became the dominant type of testing in the dairy genetics industry.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=16cm]{figures/Bulls_Market.png}
+    \caption{Total number of new bulls released in the market\ \small \textbf{Source}: NAAB}
+    \label{fig:num_bulls} 
+\end{figure}
+
+
+
+% Figure \ref{fig:percent_supply} shows the percentage of bulls that are genomically tested by birth year.
+
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=16cm]{figures/percent_supply.png}
+%     \caption{Share of each status of bull by year}
+%     \label{fig:percent_supply} 
+% \end{figure}calves in 2010, and the share has grown steadily, while smaller firms followed them at a slower rate.
+
+
+
+% We call ``large" companies those with the most significant average number of bulls across the entire 2000-2020 period in the North American genetics market. Similarly, a firm is called ``preexisting'' if it participated in the bull genetics markets before 2009; otherwise, they are considered ``new."
+% The high starting costs for genotyping help explain this since large companies were the ones that could initially afford it. Still, more companies have genotyped their calves since genomic selection was released. Larger firms genotyped a more significant percentage of their newborn 
+
+% \begin{figure}[H]
+%     \centering
+%     \includegraphics[width=16cm]{figures/percent_size.png}
+%     \caption{Number of genomically tested bulls by firm size\\ \small \textbf{Source}: NAAB}
+%     \label{fig:new_bulls} 
+% \end{figure}
+
+% Genomic testing allows genetic companies to detect suitable bulls earlier; thus, they can release those animals into the market as soon as they reach sexual maturity. Figure \ref{fig:new_bulls} shows the total number of new bulls released in the market by year and type of firm. 
+
+
+
+\section{Empirical Framework\label{sec:emp_frame}}
+The goal of this analysis is to understand whether genomic testing increased inbreeding in cattle because of a preference for linebreeding already popular families of cattle.
+Since the percentage adoption of genomics is so high in the data, it is unlikely that we can use bulls that are not genomically tested as a control group.
+%Moreover, bulls that are not genomically tested are more likely to have better quality traits and be more widely used.
+As an empirical approach, we must distinguish between breeders focusing efforts on these lines because of their existing quality versus their existing popularity, which would give higher genetic gain to breeders.
+
+To isolate the role of the existing popularity of genetics, we construct a counterfactual sample that has the same genetic traits but is from a less popular line.
+Specifically, we use propensity score matching \citep{Smith2005} to define a control group that resembles the treatment in all observable characteristics, in this case the genetic traits. 
+If genomic testing led to a race for quality bulls regardless of their previous use, we should see the inbreeding rate of these lines increase the same amount as the popular lines.
+If, instead, genomic testing accelerated line breeding for the popular lines, we should see a significant difference in the inbreeding rates after 2010.
+
+We define a \textbf{line} as the set of direct (male) descendants from a particular bull.
+We also define a ``super star'' as a bull whose number of sons is in the 95th percentile of the distribution of offspring. 
+To construct the line, we start by considering sires born between 1998 and 2004, as the ``founders'' of each line.
+Our definition depends critically on when the founders of such lines were born; if we choose too early of a date, lines are too difficult to distinguish since all bulls are related to some degree.
+After identifying the sires on which to build lines, we recursively build their pedigrees by matching bulls with their sires until we find the latest animal in the sample. 
+Figure \ref{fig:treat_control} in the appendix summarizes the sample selection mechanism; the treatment and control groups are comprised of the descendants of two groups: supersires (treatment) and matched sires (control).
+
+%Breeders are under high competitive pressure to supply bulls with the highest PTAs. However, the best way to do so is by linebreeding a family of bulls so that the relative distance to an ancestor remains constant across generations. \cite{Steyn2022} and \cite{Steyn2023} show that younger sires capture a more significant share of present-day population genetic variation; hence, genotypes of older sires can be discarded from (genomic) evaluations. As generations begin to accumulate, the contribution of a particular sire decreases (on average) exponentially, so we can disregard the impact of distant ancestors. 
+
+% The reason behind this is that bulls are advertised only with their sire and grandsire; any ancestry beyond that is not taken into account by dairy farmers. If we choose a later date, both treatment and control groups will have little difference in inbreeding rates because there is not enough time for the control group lines to develop. 
+
+% We want to measure the causal effect of introducing genomic testing in 2009 on the average inbreeding in extant lines; the first problem we must tackle is the nature of a valid comparison group. The introduction of genomic testing caused animal breeders to supply more animals from well-known lines, that is, descended from superstar sires; our control group must be the lines descended from other non-superstar sires. 
+
+The first step is to match the founders of such lines with other sires that did not father as many sons but had comparable genetic traits. Second, we find all descendants from both groups and compare the evolution of their inbreeding rates through time. 
+The idea behind this procedure is that when those bulls were in the market, any reasonably similar sire could have been chosen but was not, and thus, can be used to construct a counterfactual line. 
+ To do so, we use a propensity score matching estimator, let $p(X)=\Pr(T_{j} = 1 | \mathbf{X})$ where $T$ is a dummy equal to 1 if sire $j$'s offspring is on the 95$^{th}$ percentile of the distribution and $X_{j}$ be a vector comprised of the following:
+
+\begin{enumerate}
+    \item Predicted Transmitting Ability for production traits (milk, fat, and protein), health traits (mastitis, metritis, productive life), and reproductive traits (daughter pregnancy rate, early first calving, gestation length).
+    \item Dummies for the absence of certain recessive genetic disorders \citep{sire_workbbok2021} such as \textit{brachyspina}, complex vertebral malformation, cholesterol deficiency, and mule foot.
+    \item Dummies for the presence of genes associated with specific qualitative traits (polled, or red coat color).
+    \item Dummies for the presence of haplotypes (specific sequences of DNA at different locations in the chromosome) that affect fertility \citep{haplotypes2018} when present in homozygous form (likely to be expressed when two carrier animals are mated).
+\end{enumerate}
+
+We then estimate the propensity score \citep[p.~873]{Cameron_Trivedi2005}, the probability of being a superstar given the level of PTAs and the presence of the entire set of variables listed above. The validity of our method relies on a series of assumptions \citep{Heckman1997}:
+% For every family, we must construct a counterfactual family with new bulls being born every year, each with an inbreeding rate that we can average across cohorts. 
+% Then, the \textbf{treatment group} are all lines of animals comprised of direct descendants of superstar sires. 
+% Similarly, the \textbf{control group} includes descendants from comparable animals matched to superstar bulls by their genetic trait levels.
+
+\medskip
+\textbf{Assumption 1} (Stable Unit Treatment Value Assumption): $(inb^{treatment}, inb^{control}) \perp\!\!\!\perp T/\mathbf{X}$.
+
+The average inbreeding rates of any two lines do not vary with the treatment assigned to other lines. For each unit, there are no different forms of each treatment level \citep{Imbens2015}, conditional on a set of covariates. This assumption implies that conditional on $\mathbf{X}$, the distribution of inbreeding rates for both groups will be the same for all founders, but it must differ for their offspring. Figure \ref{fig:inb_dist}, shows the extent to which the inbreeding rate distribution of our matched sample resembles that of the treatment group. Unlike unmatched sires, their inbreeding distribution has a similar mean and variance conditional on the set of genetic traits. In a similar fashion, Figure \ref{fig:love_plot} shows the standardized mean differences of all variables used to estimate the propensity score. Balance is achieved for several variables, notably for all haplotype dummies and several PTAs.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figures/inb_dist.png}
+    \caption{Distribution of Inbreeding rates across pre-treatment groups}
+    \label{fig:inb_dist} 
+\end{figure}
+
+\medskip
+\textbf{Assumption 2}: $0<\Pr\left(T_{j} = 1 \middle|\mathbf{X}\right)<1$ for all $\mathbf{X}$
+
+This assumption implies that we can define a propensity score for every value in the treatment group. Assumptions 1 and 2 together are the ``strong ignorability'' assumption in \cite{Rosenbaum1983}, and they are necessary in conjunction to identify causal parameters. The set of matching variables above exhausts the entire set of possible selection criteria for breeders; no unobserved variable can influence mating decisions. Figure \ref{fig:common_support} shows the degree of overlapping between superstars and alternative sires; since there is a considerable difference in the size of the groups, superstars make up only a tiny fraction of bulls; however, the overlapping is good in the range $0.05-0.50$, but there exist a few superstars that had few close matches in the sample. 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figures/common_support.png}
+    \caption{Propensity score by class of bull}
+    \label{fig:common_support} 
+\end{figure}
+
+A central part of our argument is that treatment and control groups should have similar inbreeding levels before genomic selection. To test that assumption, in Table \ref{tab:table2}, we calculate the difference in averages of treatment and control groups for inbreeding rates and a few selected traits. There is no statistically significant difference for most traits between treatment and control groups, so our matching method ensures that the difference between both groups is due to the ``prestige'' of superstar lines because the bulls in the treatment group had a larger offspring than those in the control group. Each year, these bulls will have a new set of descendants being born, each with its inbreeding rate and genetic traits; if our hypothesis holds, then the inbreeding rates of the descendants of supersires should be significantly higher than those of non-superstar descendants.\footnote{In Appendix A, we discuss three more assumptions that must hold for our estimator to be valid including parallel trends, no anticipatory effects, and asymptotic convergence.} 
+
+\input{figures/balance_table}
+
+% We then estimate the differential impact of genomic selection (our treatment) on the two types of lines, those from supersires and those from alternative sires. Model (2) includes leads and lags of the treatment to check degree to which a pre-treatment balance exists in both groups. This is not a test for parallel trends on our differences-in-differences specification \citep{Cunningham2021}, but it helps us ascertain how comparable both groups are. Table \ref{tab:table2} shows that there is no significant pre-treatment difference in both groups and that coefficients from 2010-2011 are not statistically significant either, which coincides with the values from Figure \ref{fig:tpi} where there is a significant increment in inbreeding rates starting in 2012.
+
+Let $j=1,\dots, J$ be the set of lines, defined as the set of direct descendants from a single male ancestor. Each line is comprised of $i=1,\dots,n_{j}$ bulls born in year $t$ and belongs to firm $k=1,\dots,K$. 
+
+We observed the average inbreeding rates of the treatment and matched control groups before and after the introduction of genomic selection. If we divide the 2005-2017 period into two groups, pre-intervention (2005-2009) and post-intervention (2010-2018), denoted as 1 and 2 and let $treat_{j}$ denotes whether a bull from line $j$ belongs to treatment ($treat_{j}=1$) or control ($treat_{j}=0$) groups, then:
+
+\begin{equation*}
+    inb_{ijkt}=treat_{j}\times inb_{ijkt}^{treat}+(1-treat_{j})\times inb_{ijkt}^{control}
+\end{equation*}
+
+Where $inb_{ijkt}$ is the inbreeding rate of bull $i$ from line $j$, that was marketed by firm $k$ and was born in year $t$. To measure the effects of genomic selection on inbreeding, we estimate the differences-in-differences model:
+
+\begin{align}
+    inb_{ijkt} &= treat_{j}+treat_{j}*\sum_{\substack{t=2005\\t \neq 2009}}^{2019}\beta_{t}\mathbf{I}(year=t)+\alpha_{t}+\alpha_{k}+\varepsilon_{ijt}\tag{Model 2}\\
+    inb_{ijkt} &= treat_{j}+treat_{j}*\sum_{\substack{t=2005\\t \neq 2009}}^{2019}\beta_{t}\mathbf{I}(year=t)+\alpha_{t}+\alpha_{k}+\mathbf{X}_{it}\gamma+\varepsilon_{ijt}\tag{Model 3}\\
+    inb_{ijkt} &= treat_{j}+treat_{j}*\sum_{\substack{t=2005\\t \neq 2009}}^{2019}\beta_{t}\mathbf{I}(year=t)+\alpha_{t}+\alpha_{k}+\mathbf{X}_{it}\gamma+\left(\mathbf{X}_{it}*post_{t}\right)\rho+\varepsilon_{ijt}\tag{Model 4}
+    \end{align}
+
+Model (2) is a specification that does not contain any covariates (PTAs), and it decomposes the ATT on inbreeding rates by year of birth cohort. Model (3) incorporates the bull's genetic traits ($\mathbf{X}_{it}$) and firm-level fixed effects, and Model (4) includes interactions of genetic traits and the post-treatment dummy. 
+We include the last specifications to account for trait-level trends. 
+We also know that the treatment affects both inbreeding rates and PTAs, but we do not have a structural model for their impact \citep{Lewbel2019}, so we include them in a non-linear fashion as both levels and interactions to reduce the uncertainty about the functional form of our controls.
+
+\section{Results\label{sec:results}}
+
+Figure \ref{fig:inb_match} shows treatment and control groups' average inbreeding rates and confidence intervals across years. Genomic selection did not increase inbreeding rates immediately; both curves began to diverge substantially after 2011. Inbreeding rates, in turn, started growing two years later, and both curves diverged significantly from 2012 onwards.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=16cm]{figures/inb_match.png}
+    \caption{Average inbreeding rates in treatment and control groups}
+    \label{fig:inb_match} 
+\end{figure}
+
+This plot closely matches the evolution of the population average inbreeding rates plotted in Figure \ref{fig:tpi}. This behavior is consistent with our hypothesis that breeders prefer well-known over new lines. 
+Our findings coincide with results reported by \cite{Guinan2023}, who also look at the time trends of productivity and reproduction traits in US dairy cattle. 
+The authors also document a decrease in the generation interval and an increase in inbreeding rates of Holstein and Jersey cattle but do not consider the latter an issue because the expected inbreeding rates of future offspring adjust genetic trait values.
+
+% \newpage
+\input{figures/results_table_alt}
+
+Table \ref{tab:table1} shows the results of three models.  Model (1) only includes the interaction between treatment and an indicator for the post period, making it a 2x2 difference-in-difference model. Model (2) splits the treatment effect by year of birth averages, Model (3) includes the complete set of genetic traits and firm-level fixed effects, and Model (4) is the model with traits and a post-treatment dummy. In all specifications, standard errors are clustered at the line level to better deal with the inconsistency generated by the autocorrelation of inbreeding rates between different generations \citep{Bertrand2004}.
+
+Model (1) is the simple differences-in-differences estimation where $post_{t}$ is a dummy equal to 1 if the bull was born after 2009. The results show that bulls descending from supersires increased their inbreeding rates by 1.46 percent more than those who descend from less popular bulls, on average. Since the impact of genomic testing on inbreeding rates only became noticeable after 2011, the coefficient underestimates the average treatment effect on the treated (ATT) of genomic selection. Model 2 shows that the treatment-year-of-birth interactions are positive and significant from 2012 onwards, with the 2018 effect being the highest.
+
+Models (3) and (4) in Table \ref{tab:table1} show that there is a positive and significant incremental variation for the treated versus control groups in the years 2012-2018 even with the inclusion of controls. In all years after 2010, the coefficients are positive. 
+They both show a positive and increasing inbreeding rate in the treatment group comprised of all descendants from prestige sires relative to the control group of descendants of comparable non-superstar sires.\footnote{The last period in the sample is 2018 instead of 2020 because we cannot make inferences after 2018 due to a reduction in the number of animals in the control sample; the number of comparable descendants is too small for us to consider them a valid comparison group. This drastic reduction is a consequence of lower fertility rates in the control group; since those sires fathered fewer sons, their sons will beget even fewer grandsons, and after a few years, this group collapses.} 
+
+Table \ref{tab:table1} also includes the results for the F-test for joint significance of all pre-treatment differences in trends for the interaction of treatment and year of birth. The p-values show no significance at any specific level in any of the specifications. \footnote{This is not a test for parallel trends since the assumption relies on unobservable counterfactuals. Rather, it is usually considered evidence in favor of the assumption of parallel trends. However, this is not necessarily the case since this test has low power against a linear or quadratic pre-trend alternative \citep{Roth2022}. In our case, we can dismiss this concern; since our matching method ensures the fulfillment of the condition for the founders, the entire effect must be due to their sons and grandsons.}
+
+% letting $\hat{\beta}_{k}$ be the coefficient for any of the post-treatment periods, then:
+
+% \begin{equation*}
+%     E\left[\beta_{k}\right]=ATT_{k}+\left(E\left[inb_{ik}^{control}-inb_{i0}^{control}\middle| T_{i}=1\right]-E\left[inb_{ik}^{control}-inb_{i0}^{control}\middle| T_{i}=0\right]\right)
+% \end{equation*}
+
+% The parallel trends assumption implies that the term in parentheses is equal to zero; then the coefficients correctly capture the ATT for any post-treatment period $k=t-2009>0$. On the other hand, its pre-treatment analog is identified as:
+
+% \begin{equation*}
+%     E\left[\beta_{(-k)}\right]=E\left[inb_{i(-k)}^{control}-F_{i0}^{control}\middle| T_{i}=1\right]-E\left[inb_{i(-k)}^{control}-inb_{i0}^{control}\middle| T_{i}=0\right]
+% \end{equation*}
+
+% We have shown that these coefficients are not significantly different from zero for all pre-treatment periods, individually and jointly.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figures/coef_plot.png}
+    \caption{Coefficient plots for different specifications}
+    \label{fig:coef_plot} 
+\end{figure}
+
+Figure \ref{fig:coef_plot} shows the coefficients from the interaction of year fixed effects and treatment status to assess the impact of inbreeding per year.
+Every year after 2012, the inbreeding rate of the treatment group is between 1 and 2.8 percentage points higher than the control group. The coefficient values decrease slightly after controlling for their genetic traits, but remain statistically significant. The figure also shows that all pre-treatment coefficients are not significant.
+Figure \ref{fig:coef_plot} uses the \textit{sup-t} uniform confidence intervals for the pre-treatment periods of \cite{MontielOlea2019} as suggested by \cite{Freyaldenhoven2019} instead of the standard pointwise confidence. These confidence intervals contain the actual path of the coefficients 95\% of the time and can better help understand which types of pre-trends are consistent with the data.
+
+
+\section{Cost-Benefit Analysis\label{sec:cost}}
+Using published estimates of the costs of inbreeding, we can attach a monetary value to increased inbreeding rates. \cite{Smith1998} shows that every additional inbreeding percent is associated with 24.45 USD less income from milk sales. The total cost depends on what we consider the average inbreeding.
+We can use the control group rates as a counterfactual and calculate the cost from increased inbreeding of the treatment group, multiplied by the total stock of Holstein cattle.
+In that instance, we estimate a total cost from increased inbreeding of 3.7 billion dollars for the period 2011-2019. Alternatively, by industry standards, the maximum recommended inbreeding rate is 6.25\%, which is the rate of an animal whose parents are half-siblings\footnote{\url{https://www.agproud.com/articles/36810-the-impact-of-genomics-on-rapid-increase-of-inbreeding-of-holsteins}}. 
+Calculating the cost from inbreeding levels greater than such value, we estimate the total cost for the same period as 7.2 billion dollars for the entire dairy industry.
+
+While genomic testing increased inbreeding, it also increased milk production and thus profits for the dairy industry.
+The benefits of introducing genomic selection to the dairy industry can be calculated using an index called \textbf{Net Merit}, which measures the net profit over the lifetime of the animal’s average daughter, expressed in U.S. dollars. Net merit is calculated by multiplying the values of genetic traits by a set of dollar values intended to capture the ``market value'' of all traits.\footnote{Table \ref{tab:net_merit} shows what are the magnitudes of such weights \citep{VanRaden2021}. Note that the calculation involves the usage of subindexes for health and reproduction traits, as well as an estimation of residual feed intake per animal.}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figures/net_merit.png}
+    \caption{Observed and Predicted Net Merit Values}
+    \label{fig:net_merit} 
+\end{figure}
+
+To approximate the impact of genomic testing on Net Merit, we look at its pre- and post-2009 trends.
+We use the data from 1985 to 2009 to fit an ARIMA model to predict its values for the out-of-sample period of 2010-2020\footnote{We use the automatic order selection method described in \cite{Hyndman2008}, which estimates a series of models and then selects the best model on the basis of their Akaike Information Criterion}. 
+Figure \ref{fig:net_merit} shows average Net Merit values per year (yellow line) and its predicted values from 2009 (black line).
+Starting in 2011, the performance of the Net Merit index vastly outperforms even the 95\% prediction interval from this model, and it amounts to an average of 275 USD per animal over the 11 years compared to the predicted (pre-introduction) values.
+
+These numbers can be easily converted into an estimation of total benefits from genomic selection by multiplying the gain in Net Merit by the estimated number of cattle in the United States and dividing this number by one-half (because the gains come from the male side only.) 
+This amounts to 14 billion USD for 2009-2020, or 1.2 billion dollars annually on average. 
+In terms of net benefits, this implies that the benefits of genomic testing net the costs of inbreeding equal 6.9-10.42 billion US dollars.
+
+%Alternatively, if we run Model (1) using Net Merit as the outcome to estimate the impact of genomic testing, the Net Merit increases by 102.2 USD per animal on average. Using the 24.45 USD per inbreeding percent, we can convert the 1.4 additional points of inbreeding in USD dollars, for a total of 35.52 USD per animal and subtract it from the gains in Net Merit; this equals 74.25 USD in net gains per animal on average across the 2011-2019 period for the treatment versus the control group in our sample.
+
+
+\section{Discussion\label{sec:discussion}}
+This article investigates the consequences of genomic selection on the US dairy industry. On the one hand, this new technology significantly improved productivity. 
+On the other hand, we find evidence that it increased the average inbreeding rate of all bulls in the market. As genomic testing increased the rate of genetic improvement, it appeared to have exerted competitive pressure on animal breeders to select from popular lines where the gains are high.
+By not crossing enough from other lines, the inbreeding rate increases and runs the risk of introducing future health problems in dairy cattle in the US and around the world.
+As the average inbreeding rate increases, every new generation of animals experiences an increased risk of experiencing inbreeding depression and a higher chance of genetic diseases hidden in recessive traits.
+
+Because dairy cattle breeders are not incentivized to cross-breed in the current market, this suggests a role for the government or an industry group to assist in solving the coordination problem.
+Currently, the Holstein Association of the United States adjusts the values of genetic traits according to inbreeding levels to penalize breeders that select bulls with high inbreeding rates to account for the higher reproduction costs of such animals. 
+Yet, \citet{Cole2023} points out that many of the most inbred bulls have such high levels of traits that the downgrading will not temper the demand for them enough.
+Another option would be to give dairy farmers more information about the dangers of inbreeding to reduce demand for the most inbred lines \citep{Cole2023}.
+
+Similar coordination problems have been confronted in the application of pesticide and use of Bt-resistant crops by farmers.
+In the case of Bt-resistant crops, the US EPA and many countries decided on a command and control strategy which mandates farmers to plant some area to non-Bt-resistant crops \citep{huang2011success}.
+This amounts to a tax, in the form of a yield penalty, on farmers to force them to internalize the costs of their actions.
+Whether such a strategy would work for dairy cattle breeding would depend on some key factors.
+Namely, how logistically might a government or organization impose a similar penalty on dairy cattle breeders to steer them away from inbreeding?
+
+More research is needed in this area in agricultural economics, as the coordination problems of dairy cattle breeding have not yet been examined by the field.
+Yet, the field has exactly the theoretical frameworks for examining these kinds of problems in the dairy industry.
+Moreover, studying the increase in inbreeding is crucial for ensuring a safe and global resilient dairy sector in the future and ensuring that US dairy cattle breeders continue to sustainably raise the productivity of dairy cattle in the future.
+
+
+\newpage
+\bibliography{references}
+\clearpage
+
+\appendix
+
+
+% \section{Appendices\label{sec:appendices}}
+\section{Additional Estimator Assumptions}
+\label{app:estimator}
+Our causal estimand of interest is the Average Treatment on the Treated (ATT) in the post-intervention period:
+
+\begin{equation*}
+    ATT_{post}=E\left[inb_{post}^{treat}-inb_{post}^{control} \middle| T_{j}=1\right]
+\end{equation*}
+
+This quantity measures the average causal effect on the treated lines in the post-treatment period \citep{Roth2023}. To correctly identify causal effects, a series of assumptions must hold \citep{Sun2021}:
+
+\medskip
+\textbf{Assumption 3} (Parallel trends): 
+\begin{equation*}
+    E\left[inb_{post}^{control}-inb_{pre}^{control}\middle| T_{j}=1\right] = E\left[inb_{post}^{control}-inb_{pre}^{control} \middle| T_{j}=0\right]
+\end{equation*}
+
+We assume that the average inbreeding rates for both groups would have evolved in parallel without introducing genomic selection. This assumption is not testable because we cannot observe untreated inbreeding rates after 2009, but it constrains our model specification to a Two-Way Fixed Effects specification we call Model (1):
+
+\begin{equation}
+inb_{ikt} = treat_{i}+(treat_{i}*post_{t})\beta+post_{t}+\alpha_{k}+\varepsilon_{ijt}\tag{Model 1}
+\end{equation}
+
+Where $inb_{ikt}$ is the inbreeding rate of bull $i$ born from a line that belongs to either the treatment or control group born in year $t$, supplied by firm $k$, $\beta_{t}$ is a year of birth fixed effect, and $\alpha_{j}$ is a firm fixed effect. 
+
+\medskip
+\textbf{Assumption 4} (No anticipatory effects): $inb_{pre}^{control}=inb_{pre}^{treat}$
+
+This assumption ensures that both groups were comparable before the treatment; inbreeding rates of superstar lines did not increase before the introduction of genomic selection; we use matching methods to ensure that this condition holds. 
+
+Under Assumptions 3 and 4, we have that:
+
+\begin{equation}
+    ATT_{post}=E\left[inb_{post}^{treat}-inb_{post}^{control} \middle| T_{j}=1\right]-E\left[inb_{pre}^{treat}-inb_{pre}^{control} \middle| T_{j}=0\right]
+\end{equation}
+
+The ATT is identified as the difference-in-differences of observed outcomes in the pre and post-intervention periods. All elements in this equation are observed and, therefore, estimable. Suppose superstars had superior traits to our matched control group. In that case, this condition is violated, and we would not be able to parse out the causal effect of inbreeding from the effect of the bull's genetic superiority. Assumptions 3 and 4 ensure that the OLS estimates $\hat{\beta}$ from Model (2) are consistent and asymptotically valid \citep{Roth2023}.
+
+\medskip
+\textbf{Assumption 5}: Let $W_{j}=(inb_{j,pre}, inb_{j,post}, T_{j})^{'}$ be a vector of outcomes and treatment status for unit $i$. Then, we observe a sample of $N$  independent and identically distributed random draws $W_{i}\sim F_{W}(w)$ for a distribution $F$ satisfying parallel trends.
+
+Under Assumptions 3, 4, and 5: $\sqrt{N}(\hat{\beta}-ATT_{post})\overset{D}{\rightarrow} N(0, \sigma^{2})$, then we can consistently estimate the variance $\sigma^{2}$ clustering at the line level \citep{Bertrand2004} asymptotically ($N\rightarrow\infty$ and $T$ fixed).
+
+We can also decompose the variations in treatment time since every year, a certain number of bulls will be born from lines in both groups, each with its inbreeding rate that can be averaged across treatment and control groups. Models 2-4 show the complete specification with leads and lags of the treated group. These models decompose the estimated ATT relative to the treatment average by birth year. \cite{Sun2021} call this specification ``Dynamic specification.'' However, there is no staggered treatment since genomic selection affects all lines in the same year, but inbreeding rates evolve independently after the treatment. 
+
+This assumption states that the treatment status of an individual from any given line is not affected by the treatment status of others. In our setting, the treatment (genomic selection) affects all individuals, so there is no selection into treatment.
+\section{Robustness Checks\label{subsec:robustness}}
+\subsection{Total number of descendants\label{suvsubsec:progeny}}
+
+In our analysis, we defined a ``supersire'' as a bull whose total number of descendants was among the 95$^{th}$ percentile of their distribution by 2021. The cutoff point also influences this calculation since genomic testing leads to an expansion of the supply of bulls, and the size of any line is endogenous to genomic selection. It can be argued that selecting bulls on the ex-post number of sons is tautological to our argument.
+
+Figure \ref{fig:coef_plot_robust} plots the coefficients for the different differences-in-differences specifications, but this time, the number of descendants is calculated only up to 2010, so we assume that genomic selection is just being introduced, and we are trying to guess which lines will be more successful. Coefficients for 2014 and 2015 are now substantially reduced and become insignificant, but the overall result remains unchanged; we still have that the treatment group has notoriously higher inbreeding rates than the control group, as seen in the $2\times 2$ model, where the coefficient is still positive and significant for the entire period, as seen on \ref{tab:table4}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figures/coef_plot_robust.png}
+    \caption{Coefficient plots for an alternative definition of supersire}
+    \label{fig:coef_plot_robust} 
+\end{figure}
+
+
+\subsection{Quarter of birth effects\label{subsubsec:quarter}}
+Since we have the exact date of birth of every animal in the sample, we can group them by a quarter of birth as well; Figure \ref{fig:coef_plot_quarter} shows the results from Models 2-4 but replacing year for a quarter of birth interactions with the treatment. The signs and magnitudes of coefficients do not differ substantially from the original formulation. The increase in coefficient values is monotonic and statistically significant since 2012, but having a smaller sample size per quarter makes confidence intervals wider.  
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=16cm]{figures/coef_plot_quarter.png}
+   \caption{Coefficient plots for quarter of birth effects}
+    \label{fig:coef_plot_quarter} 
+\end{figure}
+
+This article's results depend heavily on a somewhat arbitrary definition of a ``superstar'' bull in terms of the size of his line. What would happen if we changed that from the 95th to another quantile of the line size distribution? Figure \ref{fig:placebo_plots} shows the coefficient plots for different definitions of ``superstar''. 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figures/placebo_plots.png}
+   \caption{Robustness test: changes in the definition of ``superstar''}
+    \label{fig:placebo_plots} 
+\end{figure}
+
+If we change the cutoff point from the 95th to the 99th percentile, the sign, and magnitude of our coefficients do not change much. Still, the confidence intervals widen significantly because our treatment group comprises such specific animals that the matching algorithm cannot find suitable matches. As a consequence, the significance of the difference-in-differences coefficients decreases significantly. Going in the other direction, we can find marginally better matches for the superstar group. However, the control group ended abruptly in 2015 because most of the original group's control lines are now included in the treatment, making the control group short-lived. We conclude that our results depend critically on a set of lines that allow for a good comparison when included in the control group; otherwise, the analysis yields insignificant results.
+
+\subsection{Date of birth of ``superstars''\label{subsubsec:dob}}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figures/ancestry_plot.png}
+   \caption{Coefficients from model (2) per different definitions of founders' date of birth}
+    \label{fig:ancestry} 
+\end{figure}
+
+Finally, Figure \ref{fig:ancestry} shows coefficient plots by different definitions of the founders' date of birth. We defined founders as all bulls born between 1997 and 2005, but such a definition is also arbitrary. If we adopt different cutoffs for the period where the founders were born from 1996/1998 to 2004/2006, we have $3 \times 3 = 9$ distinct combinations for starting and end date. The coefficient plot shows that the bulk of the effect can be attributed to sires born from 1996 to 2006; if we extend further the selection period of sires, we will have more endogeneity issues since, by this date, it was known that the bovine genotype was being sequenced, and thus, that there would be a significant effect on the market.
+
+\section{Additional Plots\label{subsec:add_plots}}
+% \newpage
+
+\input{figures/results_table_firm}
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale = 0.95]{figures/love_plot.png}
+    \caption{Covariate balance plot}
+    \label{fig:love_plot} 
+\end{figure}
+
+\newpage
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{figures/treat_control.pdf}
+    \caption{Sample selection mechanism}
+    \label{fig:treat_control} 
+\end{figure}
+
+
+
+
+
+
+
+\input{figures/NM}
+\input{figures/results_table_robust}
+\end{document}
