@@ -1,0 +1,617 @@
+---
+title: "Scraped Old Evals"
+output:
+  html_document:
+    df_print: paged
+---
+
+Load libraries and data
+```{r}
+options(warn=-1)
+library(tidyverse)
+library(bigrquery)
+library(lubridate)
+library(statar)
+library(knitr)
+library(stringi)
+library(broom)
+library(ggrepel)
+library(ggfortify)
+
+setwd("C:/Users/victo/Box/dairy_matching/code/AISS data")
+
+evals <- read.csv("../../data/old_evals.csv")
+```
+
+Select and rename columns
+```{r}
+evals |>
+  rename(reg_name = Registration.Name, 
+         reg_num = Registration.Number,
+         naab_code = Primary.NAAB.Code,
+         status = Status,
+         controller_name = Controller.Name,
+         dob = Date.of.Birth,
+         aaa_codes =  aAa,
+         genetic_codes = Genetic.Codes..,
+         beta_casein = Beta.Casein,
+         kappa_casein = Kappa.Casein, 
+         beta_lactaglobulin = Beta.Lactoglobulin,
+         NM = NM.,
+         NM_percentile = NM.Percentile,
+         CM = CM.,
+         FM = FM.,
+         GM = GM.,
+         pta_milk = Milk,
+         pta_scs = SCS, 
+         pta_fat = Fat...,
+         pta_protein = Protein...,
+         pta_pl = Productive.Life,
+         pta_liv = Livability,
+         pta_dpr = DPR, 
+         pta_hcr = HCR, 
+         pta_ccr  = CCR, 
+         pta_scr = SCR, 
+         pta_gest_length = Gestation.Length, 
+         pta_gest_length_obs = Gestation.Length.obs, 
+         pta_efcalving = Early.First.Calving,
+         pta_efcalving_obs = Early.First.Calving.obs,
+         pta_type = PTA.Type, 
+         udder_composite = UDC,
+         pta_stature = Stature,
+         pta_strength = Strength,
+         pta_body_depth = Body.Depth,
+         pta_dairy_form = Dairy.Form,
+         pta_rump_angle = Rump.Angle, 
+         pta_thurl_width = Thurl.Width,
+         pta_rear_legs_side = Rear.Legs.Side.View,
+         pta_foot_angle  = Foot.Angle, 
+         pta_fore_udder = F.U..Attachment,
+         pta_rear_udder_height = Rear.Udder.Height,
+         pta_rear_udder_width = Rear.Udder.Width,
+         pta_udder_cleft = Udder.Cleft,
+         pta_udder_depth  = Udder.Depth, 
+         pta_teat_front_place = Front.Teat.Placement,
+         pta_teat_length = Teat.Length,
+         pta_milking_speed = Milking.Speed,
+         pta_mastitis = Mastitis,
+         pta_metritis = Metritis, 
+         pta_disp_abomasum = D..Abom,
+         pta_ketosis = Ketosis,
+         pta_r_placenta = R..Placenta,
+         pta_milk_fever  = Milk.Fever,
+         sire_ce = Sire.CE,
+         daughter_ce = Daughter.CE,
+         sire_ce_obs = Sire.CE.obs,
+         daughter_ce_obs = Daughter.CE.obs,
+         pta_mobility = Mobility,
+         sire_name = Sire,
+         mgs_name = MGS, 
+         pta_rear_legs_rear = Rear.Legs.Rear.View,
+         naab_code_secondary = Secondary.Code.s.,
+         haplotypes = Haplotypes,
+         feed_saved = Feed.Saved,
+         pta_heifer_liv = Heifer.Livability,
+         sire_sb = Sire.SB, 
+         daughter_sb = Daughter.SB,
+         sire_sb_obs = Sire.SB.obs,
+         daughter_sb_obs = Daughter.SB.obs,
+         pta_foot_leg_score = Feet...Legs.Score,
+         pta_teat_rear_place = Rear.Teat.Placement) ->
+  evals
+```
+
+Parse `production_obs` into number of daughters, herds and percent of US daughters.
+```{r}
+evals |>
+  mutate(num_dtrs = str_split_fixed(production_obs, " ", 9)[,1] |> as.numeric(),
+         num_herds = str_split_fixed(production_obs, " ", 9)[,3] |> as.numeric(),
+         us_perc = str_split_fixed(production_obs, " ", 9)[,5] |> as.numeric(),
+         reliability = str_split_fixed(production_obs, " ", 9)[,8]) |>
+  select(-production_obs) |>
+  separate(reliability, into = c("reliability", "sign"), sep = -1) |>
+  select(-sign) |>
+  mutate(us_perc = us_perc/100,
+         reliability = as.numeric(reliability)/100) ->
+  evals
+```
+
+Parse Date of birth
+```{r}
+evals |>
+  mutate(dob = mdy(dob),
+         yob = year(dob)) ->
+  evals
+```
+
+Parse controller names
+```{r}
+evals |> 
+  extract(controller_name, c("controller_name", "controller_number"), 
+          regex = "(.+)\\s\\((.+)\\)") |>
+  mutate(controller_number = as.numeric(controller_number)) ->
+  evals
+```
+
+DMS and GFI
+```{r}
+evals |>
+  rename(temp = GFI) |>
+  mutate(GFI = ifelse(temp != "-", temp, NA_real_), 
+         DMS = as.numeric(DMS)) |>
+  separate(GFI, into = c("GFI", "perc"), sep = -1) |>
+  mutate(GFI = as.numeric(GFI)/100) |>
+  select(-c(temp, perc)) ->
+  evals
+```
+Recode Status
+```{r}
+evals |>
+  rename(status_alt = status) |>
+  mutate(status = case_when(
+    status_alt == "Active AI Sire" ~ "A",
+    status_alt == "Foreign" ~ "F",
+    status_alt == "Genomically Tested" ~ "G",
+    status_alt == "Inactive" ~ "I",
+    status_alt == "Natural Service Bull" ~ "N",
+    status_alt == "Progeny Test" ~ "P",
+    status_alt == "Unknown" & yob < 2011 ~ "I",
+    .default = NA_character_)) ->
+  evals
+```
+
+Net Merit
+```{r}
+evals |> 
+  separate(NM, into = c("NM", "NM_rel"), sep = ",") |>
+  separate(NM_rel, into = c("NM_rel", "chars"), sep = 3) |>
+  select(-chars) |>
+  mutate(NM = as.numeric(NM), 
+         NM_rel = as.numeric(NM_rel)/100) ->
+  evals
+```
+Net Merit Percentile
+```{r}
+evals |>
+  separate(NM_percentile, into = c("NM_percentile", "perc"), sep = -1) |>
+  mutate(NM_percentile = as.numeric(NM_percentile)) |>
+  select(-perc) ->
+  evals
+```
+PTI, CM, FM and GM
+```{r}
+evals |>
+  mutate(PTI = as.numeric(PTI),
+         CM = as.numeric(CM),
+         FM = as.numeric(FM),
+         GM = as.numeric(GM)) ->
+  evals
+```
+
+Somatic Cell Score
+```{r}
+evals |> 
+  separate(pta_scs, into = c("pta_scs", "pta_scs_rel"), sep = ",") |>
+  separate(pta_scs_rel, into = c("pta_scs_rel", "chars"), sep = -3) |>
+  mutate(pta_scs = as.numeric(pta_scs),
+         pta_scs_rel = as.numeric(pta_scs_rel)) |>
+  select(-chars)  ->
+  evals
+```
+Milk
+```{r}
+evals |> 
+  mutate(pta_milk = as.numeric(pta_milk)) ->
+  evals
+```
+
+Fat (lbs)
+```{r}
+evals |> 
+  separate(pta_fat, into = c("pta_fat_lb", "pta_fat_lb_rel"), sep = ",") |>
+  separate(pta_fat_lb_rel, into = c("pta_fat_lb_rel", "chars"), sep = -2) |>
+  mutate(pta_fat_lb = as.numeric(pta_fat_lb),
+         pta_fat_lb_rel = as.numeric(pta_fat_lb_rel)) |>
+  select(-chars)  ->
+  evals
+```
+Protein (lbs)
+```{r}
+evals |> 
+  separate(pta_protein, into = c("pta_protein_lb", "pta_protein_lb_rel"), sep = ",") |>
+  separate(pta_protein_lb_rel, into = c("pta_protein_lb_rel", "chars"), sep = -2) |>
+  mutate(pta_protein_lb = as.numeric(pta_protein_lb),
+         pta_protein_lb_rel = as.numeric(pta_protein_lb_rel)) |>
+  select(-chars)  ->
+  evals
+```
+Productive Life
+```{r}
+evals |> 
+  rename(temp = pta_pl) |>
+  mutate(pta_pl = str_split_fixed(temp, " ", 2)[,1],
+         pta_pl_rel = str_split_fixed(temp, " ", 2)[,2]) |>
+  separate(pta_pl_rel, into = c("pta_pl_rel", "chars"), sep = -3) |>
+  mutate(pta_pl = as.numeric(pta_pl),
+         pta_pl_rel = as.numeric(pta_pl_rel)/100) |>
+  select(-c(chars, temp))  ->
+  evals
+```
+
+Livability
+```{r}
+evals |> 
+  rename(temp = pta_liv) |>
+  mutate(pta_liv = str_split_fixed(temp, " ", 2)[,1],
+         pta_liv_rel = str_split_fixed(temp, " ", 2)[,2]) |>
+  separate(pta_liv_rel, into = c("pta_liv_rel", "chars"), sep = -3) |>
+  mutate(pta_liv = as.numeric(pta_liv),
+         pta_liv_rel = as.numeric(pta_liv_rel)/100) |>
+  select(-c(chars, temp))  ->
+  evals
+```
+Daughter Pregnancy Rate
+```{r}
+evals |> 
+  rename(temp = pta_dpr) |>
+  mutate(pta_dpr = str_split_fixed(temp, " ", 2)[,1],
+         pta_dpr_rel = str_split_fixed(temp, " ", 2)[,2]) |>
+  separate(pta_dpr_rel, into = c("pta_dpr_rel", "chars"), sep = -3) |>
+  mutate(pta_dpr = as.numeric(pta_dpr),
+         pta_dpr_rel = as.numeric(pta_dpr_rel)/100) |>
+  select(-c(chars, temp))  ->
+  evals
+```
+Heifer Conception rate
+```{r}
+evals |> 
+  rename(temp = pta_hcr) |>
+  mutate(pta_hcr = str_split_fixed(temp, " ", 2)[,1],
+         pta_hcr_rel = str_split_fixed(temp, " ", 2)[,2]) |>
+  separate(pta_hcr_rel, into = c("pta_hcr_rel", "chars"), sep = -3) |>
+  mutate(pta_hcr = as.numeric(pta_hcr),
+         pta_hcr_rel = as.numeric(pta_hcr_rel)/100) |>
+  select(-c(chars, temp))  ->
+  evals
+```
+Cow Conception Rate
+```{r}
+evals |> 
+  rename(temp = pta_ccr) |>
+  mutate(pta_ccr = str_split_fixed(temp, " ", 2)[,1],
+         pta_ccr_rel = str_split_fixed(temp, " ", 2)[,2]) |>
+  separate(pta_ccr_rel, into = c("pta_ccr_rel", "chars"), sep = -3) |>
+  mutate(pta_ccr = as.numeric(pta_ccr),
+         pta_ccr_rel = as.numeric(pta_ccr_rel)/100) |>
+  select(-c(chars, temp))  ->
+  evals
+```
+Sire Conception Rate
+```{r}
+evals |> 
+  rename(temp = pta_scr) |>
+  mutate(pta_scr = str_split_fixed(temp, " ", 2)[,1],
+         pta_scr_rel = str_split_fixed(temp, " ", 2)[,2]) |>
+  separate(pta_scr_rel, into = c("pta_scr_rel", "chars"), sep = -3) |>
+  mutate(pta_scr = as.numeric(pta_scr),
+         pta_scr_rel = as.numeric(pta_scr_rel)/100) |>
+  select(-c(chars, temp))  ->
+  evals
+```
+
+Gestation length
+```{r}
+evals |> 
+  rename(temp = pta_gest_length) |>
+  mutate(pta_gest_length = str_split_fixed(temp, " ", 2)[,1],
+         pta_gest_length_rel = str_split_fixed(temp, " ", 2)[,2]) |>
+  separate(pta_gest_length_rel, into = c("pta_gest_length_rel", "chars"), sep = -3) |>
+  mutate(pta_gest_length = as.numeric(pta_gest_length),
+         pta_gest_length_rel = as.numeric(pta_gest_length_rel)/100) |>
+  select(-c(chars, temp))  ->
+  evals
+```
+Gestation length Observations
+```{r}
+evals |>
+  rename(temp = pta_gest_length_obs) |>
+  mutate(pta_gest_length_obs = str_split_fixed(temp, " ", 4)[,1] |> as.numeric(),
+         pta_gest_length_dtrs = str_split_fixed(temp, " ", 4)[,3]|> as.numeric()) |>
+  select(-temp) ->
+  evals
+```
+
+Early First Calving
+```{r}
+evals |> 
+  rename(temp = pta_efcalving) |>
+  mutate(pta_efcalving = str_split_fixed(temp, " ", 2)[,1],
+         pta_efcalving_rel = str_split_fixed(temp, " ", 2)[,2]) |>
+  separate(pta_efcalving_rel, into = c("pta_efcalving_rel", "chars"), sep = -3) |>
+  mutate(pta_efcalving = as.numeric(pta_efcalving),
+         pta_efcalving_rel = as.numeric(pta_efcalving_rel)/100) |>
+  select(-c(chars, temp))  ->
+  evals
+```
+Early First Calving Observations
+```{r}
+evals |> 
+  rename(temp = pta_efcalving_obs) |>
+  separate(temp, into = c("efc_obs", "efc_dtrs"), sep = ",") |>
+  mutate(pta_efcalving_obs = str_split_fixed(efc_obs, " ", 2)[,1] |> as.numeric(),
+         pta_efcalving_dtrs = str_split_fixed(efc_dtrs, " ", 3)[,2] |> as.numeric()) |>
+  select(-c(efc_obs, efc_dtrs)) ->
+  evals
+```
+Type elements
+```{r}
+evals |>
+  mutate(pta_type_dtrs = str_split_fixed(type_obs, " ", 6)[, 1] |> as.numeric(),
+         pta_type_herds = str_split_fixed(type_obs, " ", 6)[, 3] |> as.numeric(),
+         pta_type_rel = str_split_fixed(type_obs, " ", 6)[, 5]) |>
+  separate(pta_type_rel, into = c("pta_type_rel", "perc"), sep = -1) |>
+  mutate(pta_type_rel = as.numeric(pta_type_rel)/100) |>
+  select(-c(type_obs, perc)) ->
+  evals
+```
+
+Milking Speed
+```{r}
+evals |>
+  separate(pta_milking_speed, into = c("pta_milk_speed", "pta_milk_speed_rel"), sep = ",") |>
+  separate(pta_milk_speed_rel, into = c("pta_milk_speed_rel", "temp"), sep = -3) |>
+  mutate(pta_milk_speed = as.numeric(pta_milk_speed),
+         pta_milk_speed_rel = as.numeric(pta_milk_speed_rel)) |>
+  select(-temp) ->
+  evals
+```
+Mastitis
+```{r}
+evals |>
+  rename(temp = pta_mastitis) |>
+  mutate(pta_mastitis = str_split_fixed(temp, " ", 3)[,1] |> as.numeric(),
+         pta_mastitis_rel = str_split_fixed(temp, " ", 3)[,2]) |>
+  separate(pta_mastitis_rel, into = c("pta_mastitis_rel", "perc"), sep = -1) |>
+  mutate(pta_mastitis_rel = as.numeric(pta_mastitis_rel)/100) |>
+  select(-c(temp, perc)) ->
+  evals
+```
+Metritis
+```{r}
+evals |>
+  rename(temp = pta_metritis) |>
+  mutate(pta_metritis = str_split_fixed(temp, " ", 3)[,1] |> as.numeric(),
+         pta_metritis_rel = str_split_fixed(temp, " ", 3)[,2]) |>
+  separate(pta_metritis_rel, into = c("pta_metritis_rel", "perc"), sep = -1) |>
+  mutate(pta_metritis_rel = as.numeric(pta_metritis_rel)/100) |>
+  select(-c(temp, perc)) ->
+  evals
+```
+Displaced Abomasum
+```{r}
+evals |>
+  rename(temp = pta_disp_abomasum) |>
+  mutate(pta_disp_abomasum = str_split_fixed(temp, " ", 3)[,1] |> as.numeric(),
+         pta_disp_abomasum_rel = str_split_fixed(temp, " ", 3)[,2]) |>
+  separate(pta_disp_abomasum_rel, into = c("pta_disp_abomasum_rel", "perc"), sep = -1) |>
+  mutate(pta_disp_abomasum_rel = as.numeric(pta_disp_abomasum_rel)/100) |>
+  select(-c(temp, perc)) ->
+  evals
+```
+Ketosis
+```{r}
+evals |>
+  rename(temp = pta_ketosis) |>
+  mutate(pta_ketosis = str_split_fixed(temp, " ", 3)[,1] |> as.numeric(),
+         pta_ketosis_rel = str_split_fixed(temp, " ", 3)[,2]) |>
+  separate(pta_ketosis_rel, into = c("pta_ketosis_rel", "perc"), sep = -1) |>
+  mutate(pta_ketosis_rel = as.numeric(pta_ketosis_rel)/100) |>
+  select(-c(temp, perc)) ->
+  evals
+```
+GPPR
+```{r}
+evals |>
+  mutate(GPPR = as.numeric(GPPR)) ->
+  evals
+```
+GTPI
+```{r}
+evals |>
+  mutate(GTPI = as.numeric(GTPI)) ->
+  evals
+```
+Placenta
+```{r}
+evals |>
+  rename(temp = pta_r_placenta) |>
+  mutate(pta_r_placenta = str_split_fixed(temp, " ", 3)[,1] |> as.numeric(),
+         pta_r_placenta_rel = str_split_fixed(temp, " ", 3)[,2]) |>
+  separate(pta_r_placenta_rel, into = c("pta_r_placenta_rel", "perc"), sep = -1) |>
+  mutate(pta_r_placenta_rel = as.numeric(pta_r_placenta_rel)/100) |>
+  select(-c(temp, perc)) ->
+  evals
+```
+Milk Fever
+```{r}
+evals |>
+  rename(temp = pta_milk_fever) |>
+  mutate(pta_milk_fever = str_split_fixed(temp, " ", 3)[,1] |> as.numeric(),
+         pta_milk_fever_rel = str_split_fixed(temp, " ", 3)[,2]) |>
+  separate(pta_milk_fever_rel, into = c("pta_milk_fever_rel", "perc"), sep = -1) |>
+  mutate(pta_milk_fever_rel = as.numeric(pta_milk_fever_rel)/100) |>
+  select(-c(temp, perc)) ->
+  evals
+```
+Sire Calving Ease
+```{r}
+evals |>
+  rename(temp = sire_ce) |>
+  mutate(sire_ce = str_split_fixed(temp, " ", 3)[,1] |> as.numeric(),
+         sire_ce_rel = str_split_fixed(temp, " ", 3)[,2]) |>
+  separate(sire_ce_rel, into = c("sire_ce_rel", "perc"), sep = -1) |>
+  mutate(sire_ce_rel = as.numeric(sire_ce_rel)/100) |>
+  select(-c(temp, perc)) ->
+  evals
+```
+Daughter Calving Ease
+```{r}
+evals |>
+  rename(temp = daughter_ce) |>
+  mutate(daughter_ce = str_split_fixed(temp, " ", 3)[,1] |> as.numeric(),
+         daughter_ce_rel = str_split_fixed(temp, " ", 3)[,2]) |>
+  separate(daughter_ce_rel, into = c("daughter_ce_rel", "perc"), sep = -1) |>
+  mutate(daughter_ce_rel = as.numeric(daughter_ce_rel)/100) |>
+  select(-c(temp, perc)) ->
+  evals
+```
+Calving Ease Observations
+```{r}
+evals |>
+  mutate(sire_ce_obs = str_split_fixed(sire_ce_obs, " ", 2)[,1] |> as.numeric(),
+         daughter_ce_obs = str_split_fixed(daughter_ce_obs, " ", 2)[,1] |> as.numeric()) ->
+  evals
+```
+Feed Saved
+```{r}
+evals |>
+  rename(temp = feed_saved) |>
+  mutate(feed_saved = str_split_fixed(temp, " ", 4)[,1] |> as.numeric(),
+         feed_saved_rel = str_split_fixed(temp, " ", 4)[,3]) |>
+  separate(feed_saved_rel, into = c("feed_saved_rel", "perc"), sep = -1) |>
+  mutate(feed_saved_rel = as.numeric(feed_saved_rel)/100) |>
+  select(-c(temp, perc)) ->
+  evals
+```
+Heifer Livability
+```{r}
+evals |>
+  rename(temp = pta_heifer_liv) |>
+  mutate(pta_heifer_liv = str_split_fixed(temp, " ", 3)[,1] |> as.numeric(),
+         pta_heifer_liv_rel = str_split_fixed(temp, " ", 3)[,2]) |>
+  separate(pta_heifer_liv_rel, into = c("pta_heifer_liv_rel", "perc"), sep = -1) |>
+  mutate(pta_heifer_liv_rel = as.numeric(pta_heifer_liv_rel)/100) |>
+  select(-c(temp, perc)) ->
+  evals
+```
+Daughter SB
+```{r}
+evals |>
+  rename(temp = daughter_sb) |>
+  mutate(daughter_sb = str_split_fixed(temp, " ", 3)[,1] |> as.numeric(),
+         daughter_sb_rel = str_split_fixed(temp, " ", 3)[,2]) |>
+  separate(daughter_sb_rel, into = c("daughter_sb_rel", "perc"), sep = -1) |>
+  mutate(daughter_sb_rel = as.numeric(daughter_sb_rel)/100) |>
+  select(-c(temp, perc)) ->
+  evals
+```
+Sire SB
+```{r}
+evals |>
+  rename(temp = sire_sb) |>
+  mutate(sire_sb = str_split_fixed(temp, " ", 3)[,1] |> as.numeric(),
+         sire_sb_rel = str_split_fixed(temp, " ", 3)[,2]) |>
+  separate(sire_sb_rel, into = c("sire_sb_rel", "perc"), sep = -1) |>
+  mutate(sire_sb_rel = as.numeric(sire_sb_rel)/100) |>
+  select(-c(temp, perc)) ->
+  evals
+```
+Daughter Observations
+```{r}
+evals |>
+  rename(temp = daughter_sb) |>
+  mutate(daughter_sb = str_split_fixed(temp, " ", 3)[,1] |> as.numeric()) |>
+  select(-temp) ->
+  evals
+```
+
+Sire SB Observations
+```{r}
+evals |>
+  rename(temp = sire_sb_obs) |>
+  mutate(sire_sb_obs = str_split_fixed(temp, " ", 3)[,1] |> as.numeric()) |>
+  select(-temp) ->
+  evals
+```
+
+Daughter SB Observations
+```{r}
+evals |>
+  rename(temp = daughter_sb_obs) |>
+  mutate(daughter_sb_obs = str_split_fixed(temp, " ", 3)[,1] |> as.numeric()) |>
+  select(-temp) ->
+  evals
+```
+
+GJPI and PPR
+```{r}
+evals |>
+  mutate(GJPI = as.numeric(GJPI),
+         PPR = as.numeric(PPR)) ->
+  evals
+```
+Rear Legs
+```{r}
+evals |>
+  mutate(pta_rear_legs_rear = as.numeric(pta_rear_legs_rear)) ->
+  evals
+```
+
+aAa codes
+```{r}
+evals |>
+  mutate(aaa_codes = as.numeric(aaa_codes)) ->
+  evals
+```
+Remove `reg_num` and split `reg_id` into country and breed
+```{r}
+evals |>
+  mutate(breed = substring(evals$reg_id, 1, 2),
+         country = substring(evals$reg_id, 3, 5)) |>
+  select(-reg_num) ->
+  evals
+```
+
+Export results
+```{r}
+col_order <- c("reg_id", "reg_name", "country", "breed", "naab_code", 
+               "naab_code_secondary", "status", "controller_name", 
+               "controller_number", "dob", "yob", "aaa_codes",
+               "genetic_codes", "beta_casein", "kappa_casein", "beta_lactaglobulin",
+               "haplotypes",
+               "num_dtrs", "num_herds", "us_perc", "reliability",
+               "pta_milk", "pta_fat_lb", "pta_fat_lb_rel", "pta_protein_lb", 
+               "pta_protein_lb_rel", "pta_scs", "pta_scs_rel", "pta_pl", "pta_pl_rel",
+               "pta_dpr", "pta_dpr_rel", "pta_hcr", "pta_hcr_rel", "pta_ccr", "pta_ccr_rel",
+               "pta_scr", "pta_scr_rel", "pta_liv", "pta_liv_rel", "pta_type",
+               "pta_type_rel", "pta_type_dtrs", "pta_type_herds",
+               "pta_gest_length", "pta_gest_length_rel", "pta_gest_length_obs",
+               "pta_gest_length_dtrs", "pta_heifer_liv", "pta_heifer_liv_rel", 
+               "pta_efcalving", "pta_efcalving_rel", "pta_efcalving_obs",
+               "pta_efcalving_dtrs", "pta_mastitis", "pta_mastitis_rel",
+               "pta_metritis", "pta_metritis_rel", "pta_disp_abomasum", "pta_disp_abomasum_rel",
+               "pta_ketosis", "pta_ketosis_rel", "pta_r_placenta", "pta_r_placenta_rel",
+               "pta_rear_legs_rear", "pta_foot_leg_score", "pta_teat_rear_place",
+               "pta_rump_angle", "pta_thurl_width",  "pta_rear_legs_side", 
+               "pta_foot_angle", "pta_fore_udder", "pta_rear_udder_height", 
+               "pta_rear_udder_width", "pta_udder_cleft", "pta_udder_depth",
+               "pta_teat_front_place", "pta_teat_length",
+               "pta_milk_fever", "pta_milk_fever_rel", "pta_stature", 
+               "pta_strength", "pta_mobility", "pta_milk_speed", "pta_milk_speed_rel",
+               "pta_dairy_form", "pta_body_depth",
+               "sire_ce", "sire_ce_rel", "sire_ce_obs", 
+               "daughter_ce", "daughter_ce_rel", "daughter_ce_obs", "sire_sb", 
+               "sire_sb_rel", "sire_sb_obs","daughter_sb", "daughter_sb_rel", 
+               "daughter_sb_obs", "udder_composite", "feed_saved",
+               "feed_saved_rel", "NM", "NM_rel", "NM_percentile", "PTI", "JUI",
+               "CM", "FM", "GM", "DMS", "GTPI", "FLC", "GJPI", "PPR", "GFI", 
+               "BWC", "GPPR", "sire_name", "mgs_name", "status_alt")
+
+evals <- evals[, col_order]
+```
+
+Save data 
+```{r}
+write_csv(evals, file = "../../data/old_evals_clean.csv")
+```
+

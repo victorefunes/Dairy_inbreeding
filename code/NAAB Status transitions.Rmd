@@ -1,0 +1,344 @@
+---
+title: "Status Changes in NAAB Data"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+Load libraries
+```{r}
+options(warn=-1)
+library(tidyverse)
+library(bigrquery)
+library(lubridate)
+library(statar)
+library(knitr)
+library(stringi)
+library(broom)
+library(ggrepel)
+library(ggfortify)
+
+setwd("C:/Users/victo/Box/dairy_matching/code/AISS data")
+```
+
+# NAAB Info dataset
+```{r}
+projectid <- "dairy-168114"
+query <- "
+SELECT
+    reg_id,
+    id_number,
+    breed,
+    country,
+    primary_naab_code,
+    naab_codes,
+    reg_name,
+    birthdate,
+    semen_release_date,
+    genotype_information,
+    sire_breed,
+    sire_country,
+    sire_id_number,
+    dam_breed,
+    dam_country,
+    dam_id_number,
+    mgs_breed,
+    mgs_country,
+    mgs_id_number,
+    status
+FROM
+    CDCB_data.NAAB_Info
+"
+
+naab <- bq_project_query(projectid, query)
+naab <- bq_table_download(naab)
+
+naab <- naab %>%
+  mutate(birthdate = mdy(birthdate),
+         yob = year(birthdate))
+
+naab <- naab |>
+  mutate(id_number = stringr::str_replace(id_number, "\\.", ""),
+         id_number = str_pad(id_number, width = 12, side = "left", pad = "0"),
+         reg_id = paste0(breed, country, id_number))
+```
+
+# AISS data
+```{r}
+query <- "SELECT
+  country,
+  id_number,
+  name,
+  primary_stud_code,
+  sire_id,
+  mgs_id,
+  period,
+  status,
+  breed,
+  naab_code,
+  pta_milk_unadj as pta_milk,
+  pta_fat_lb_unadj as pta_fat_lb,
+  pta_protein_lb_unadj as pta_protein_lb,
+  pta_scs_unadj as pta_scs,
+  pta_pl_unadj as pta_pl,
+  pta_dpr_unadj as pta_dpr,
+  pta_hcr_unadj as pta_hcr,
+  pta_ccr_unadj as pta_ccr,
+  pta_liv_unadj as pta_liv,
+  pta_ssb_unadj as pta_ssb,
+  pta_dsb_unadj as pta_dsb,
+  pta_type_unadj as pta_type,
+  pta_stature_unadj as pta_stature,
+  pta_strength_unadj as pta_strength,
+  pta_body_depth_unadj as pta_body_depth,
+  pta_dairy_form_unadj as pta_dairy_form,
+  pta_rump_angle_unadj as pta_rump_angle,
+  pta_thurl_width_unadj as pta_thurl_width,
+  pta_rear_legs_side_unadj as pta_rear_legs_side,
+  pta_rear_legs_rear_unadj as pta_rear_legs_rear,
+  pta_foot_angle_unadj as pta_foot_angle,
+  pta_foot_leg_score_unadj as pta_foot_leg_score,
+  pta_fore_udder_unadj as pta_fore_udder,
+  pta_rear_udder_height_unadj as pta_rear_udder_height,
+  pta_rear_udder_width_unadj as pta_rear_udder_width,
+  pta_udder_cleft_unadj as pta_udder_cleft,
+  pta_udder_depth_unadj as pta_udder_depth,
+  pta_teat_front_place_unadj as pta_teat_front_place,
+  pta_teat_rear_place_unadj as pta_teat_rear_place,
+  pta_teat_length_unadj as pta_teat_length,
+  pta_mobility,
+  pta_gest_length_unadj as pta_gest_length,
+  pta_ketosis_unadj as pta_ketosis,
+  pta_metritis_unadj as pta_metritis,
+  pta_mastitis_unadj as pta_mastitis,
+  pta_milk_fever_unadj as pta_milk_fever,
+  FM_unadj as FM,
+  CM_unadj as CM,
+  GM_unadj as GM,
+  NM_unadj as NM,
+  TPI,
+  udder_composite, 
+  body_weight_composite,
+  feet_legs_composite,
+  aaa_rating,
+  daughts_in_milk_pta,
+  dob,
+  semen_price
+FROM
+  CDCB_data.NAAB_AISS
+"
+
+naab_aiss <- bq_project_query(projectid, query)
+naab_aiss <- bq_table_download(naab_aiss)
+
+naab_aiss <- naab_aiss %>%
+  separate(period, into = c("year", "per_num"), sep = "-", remove = FALSE) |>
+  mutate(dob = ymd(dob),
+         yob = year(dob))
+
+naab_aiss <-  naab_aiss |>
+  mutate(id_number = stringr::str_replace(id_number, "\\.", ""),
+         id_number = str_pad(id_number, width = 12, side = "left", pad = "0"),
+         reg_id = paste0(breed, country, id_number))
+```
+
+Create age and current year variables
+```{r}
+naab_aiss |> 
+  mutate(period = ym(period),
+         year = year(period),
+         age = year-yob) ->
+  naab_aiss
+```
+
+Fill out missing values with last missing status
+```{r}
+naab_aiss|> 
+  group_by(reg_id) |> 
+  fill(status, .direction = "down") |>
+  ungroup() ->
+  naab_aiss
+```
+
+Status by year of proof
+```{r}
+naab_aiss |>
+  mutate(year_proof = year(period)) ->
+  naab_aiss
+```
+
+Genomic-proven bulls appear for the first time in 2010.
+```{r}
+naab_aiss |>
+  tab(status, year_proof) |>
+  select(c(status, year_proof, `Freq.`)) |> 
+  pivot_wider(id_cols = year_proof, names_from = "status", values_from = "Freq.") |>
+  data.frame()
+```
+Characterize status transitions. One way to do so is by creating a dummy variable that tells us whether $status_{t+1} \neq status_{t}$ or not.
+```{r}
+naab_aiss |>
+  filter(!is.na(status)) |>
+  arrange(period) |>
+  group_by(reg_id) |>
+  mutate(status = factor(status),
+         obs_num = 1:n(),
+         status_1 = dplyr::lead(status, n = 1, order_by = obs_num),
+         status_change = ifelse(status != status_1, 1, 0)) |>
+  ungroup() |>
+  arrange(reg_id, period) ->
+  naab_aiss
+
+naab_aiss |>
+  tab(status_change)
+```
+Remove all values with `status_1` missing (last reported period for each bull).
+```{r}
+naab_aiss |>
+  filter(!is.na(status_1)) |>
+  tab(status, status_1) |>
+  select(c(status, status_1, `Freq.`)) |>
+  pivot_wider(id_cols = status, names_from = "status_1", values_from = "Freq.")
+```
+We have a total of 4725 status changes, 2763 (58%) are from Genomic to Active and 884 (19%) are from genomic to foreign. How many bulls are there actually?
+```{r}
+naab_aiss |>
+  filter(status_change == 1) |>
+  group_by(reg_id) |> 
+  summarise(num_changes = n()) |> 
+  arrange(desc(num_changes)) ->
+  changes
+```
+Out of 4725 changes, we have 4296 unique animals, out of 22149 animals (20%). 3956 (92%) Change of status only once, on the other hand, 7 bulls changed status 5 times.
+
+```{r}
+changes |>
+  tab(num_changes)
+```
+```{r}
+changes |> 
+  filter(num_changes > 1) |>
+  select(reg_id) ->
+  repeated_ids
+```
+
+Characterizing repeated bulls
+```{r}
+naab_repeated <- naab_aiss |>
+  filter(reg_id %in% repeated_ids$reg_id)
+naab_repeated <- left_join(naab_repeated, changes, by = "reg_id")
+
+naab_repeated |>
+  distinct(reg_id, .keep_all = TRUE) |>
+  tab(country)
+```
+The bulk of changes appear to be from "active to "foreign" (and reverse) 
+
+
+```{r}
+naab_repeated |>
+  filter(num_changes == 5 & !is.na(status_1)) |>
+  tab(status, status_1)
+```
+```{r}
+naab_repeated |>
+  filter(num_changes == 4 & !is.na(status_1)) |>
+  tab(status, status_1)
+```
+```{r}
+naab_repeated |>
+  filter(num_changes == 3 & !is.na(status_1)) |>
+  tab(status, status_1)
+```
+# Marketing codes
+```{r}
+query <- "SELECT
+  market_code,
+  company_name,
+  larger_company,
+  country,
+  assigned_date,
+  notes
+FROM
+  `dairy-168114.DHI_data.company_info`"
+
+companies <- bq_project_query(projectid, query)
+companies <- bq_table_download(companies)
+```
+
+```{r}
+companies |>
+  mutate(parent_company = case_when(
+    str_detect(companies$company_name, "^.*EVOLUTION|Evolution.*$") == TRUE ~ "Synetics",
+    str_detect(companies$company_name, "^.*Genex.*$") == TRUE ~ "Genex",
+    str_detect(companies$company_name, "^.*Select Sires|Select Sire|Advanced Genetics|Sire Power|Cache Valley|
+               All West|World Wide Sires|Genervations.*$") == TRUE ~ "Select Sires",
+    str_detect(companies$company_name, "^.*ABS|South Texas.*$") == TRUE ~ "ABS Global",
+    str_detect(companies$company_name, "^.*Trans Ova|URUS.*$") == TRUE ~ "Urus",
+    str_detect(companies$company_name, "^.*STgenetics|Inguran|TWG|605|Sexing Technologies|ST-Ireland|ST-France|ST Germany GmbH|
+               ST-New Zealand|ST-New Zealand|Taurus Service|Trans-America|Inguran.*$") == TRUE ~ "STgenetics",
+    str_detect(companies$company_name, "^.*Semex Alliance|Semex|Special Sires.*$") == TRUE ~ "Semex Alliance",
+    str_detect(companies$company_name, "^.*Alta Genetics.*$") == TRUE ~ "Alta Genetics",
+    str_detect(companies$company_name, "^.*Vogler.*$") == TRUE ~ "Vogler",
+    str_detect(companies$company_name, "^.*Total Livestock.*$") == TRUE ~ "Total Livestock Genetics, Pty Ltd.",
+    str_detect(companies$company_name, "^.*CRV.*$") == TRUE ~ "CRV Holding",
+    str_detect(companies$company_name, "^.*Jetstream.*$") == TRUE ~ "Jetstream Genetics",
+    str_detect(companies$company_name, "^.*Blondin Sires, Inc.*$") == TRUE ~ "Blondin Sires, Inc.",
+    str_detect(companies$company_name, "^.*Geno AI Center.*$") == TRUE ~ "Geno AI Center",
+    str_detect(companies$company_name, "^.*Hawkeye Breeders.*$") == TRUE ~ "Hawkeye Breeders",
+    str_detect(companies$company_name, "^.*Viking Genetics.*$") == TRUE ~ "Viking Genetics",
+    str_detect(companies$company_name, "^.*Elgin Breeding.*$") == TRUE ~ "Elgin Breeding Service",
+    str_detect(companies$company_name, "^.*JLG Enterprises|Glaz-Way.*$") == TRUE ~ "JLG Enterprises",
+    str_detect(companies$company_name, "^.*North Florida Holsteins.*$") == TRUE ~ "North Florida Holsteins",
+    str_detect(companies$company_name, "^.*Global Ag Alliance.*$") == TRUE ~ "Global Ag Alliance, Inc.",
+    str_detect(companies$company_name, "^.*Accelerated Genetics.*$") == TRUE ~ "Accelerated Genetics",
+    str_detect(companies$company_name, "^.*International Protein Sires.*$") == TRUE ~ "International Protein Sires",
+    str_detect(companies$company_name, "^.*Cooperative Resources.*$") == TRUE ~ "CRI",
+    str_detect(companies$company_name, "^.*German Genetics.*$") == TRUE ~ "German Genetics International (GGI)")) -> 
+  companies
+```
+Total Livestock Genetics, Pty Ltd.
+```{r}
+companies |>
+  mutate(assigned_date = ymd_hms(assigned_date),
+         parent_company = ifelse(!is.na(parent_company), parent_company, company_name)) ->
+  companies
+```
+
+```{r}
+naab_aiss <- left_join(naab_aiss, companies, 
+                       by = join_by(primary_stud_code == market_code))
+```
+
+Characterizing `G` to `A`
+```{r}
+naab_aiss |>
+  filter(status == "G" & status_1 == "A") |>
+  select(reg_id) ->
+  movers
+
+naab_aiss |>
+  filter(reg_id %in% movers$reg_id) ->
+  naab_movers
+```
+
+
+```{r}
+naab_movers |>
+  group_by(reg_id) |>
+  arrange(period) |>
+  slice_head(n = 1) |>
+  ungroup() |>
+  tab(parent_company)
+```
+```{r}
+naab_movers |>
+  group_by(reg_id) |>
+  arrange(period) |>
+  slice_head(n = 1) |>
+  ungroup() |>
+  tab(breed)
+```
+
+
