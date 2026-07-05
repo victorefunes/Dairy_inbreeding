@@ -1,0 +1,7 @@
+"0","```r
+evals |>
+  rename(temp = daughter_sb) |>
+  mutate(daughter_sb = str_split_fixed(temp, \" \", 3)[,1] |> as.numeric()) |>
+  select(-temp) ->
+  evals
+```"

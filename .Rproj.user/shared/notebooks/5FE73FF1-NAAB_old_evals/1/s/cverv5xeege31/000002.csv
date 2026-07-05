@@ -1,0 +1,15 @@
+"0","```r
+evals |>
+  rename(temp = pta_metritis) |>
+  mutate(pta_metritis = str_split_fixed(temp, \" \", 3)[,1] |> as.numeric(),
+         pta_metritis_rel = str_split_fixed(temp, \" \", 3)[,2]) |>
+  separate(pta_metritis_rel, into = c(\"pta_metritis_rel\", \"perc\"), sep = -1) |>
+  mutate(pta_metritis_rel = as.numeric(pta_metritis_rel)/100) |>
+  select(-c(temp, perc)) ->
+  evals
+```"
+"1","Warning: There was 1 warning in `mutate()`.
+ℹ In argument: `pta_metritis = as.numeric(str_split_fixed(temp, \" \", 3)[, 1])`.
+Caused by warning:
+! NAs introduced by coercion
+"

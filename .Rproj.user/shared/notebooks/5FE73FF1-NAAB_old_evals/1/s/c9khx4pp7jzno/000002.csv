@@ -1,0 +1,15 @@
+"0","```r
+evals |>
+  rename(temp = GFI) |>
+  mutate(GFI = ifelse(temp != \"-\", temp, NA_real_), 
+         DMS = as.numeric(DMS)) |>
+  separate(GFI, into = c(\"GFI\", \"perc\"), sep = -1) |>
+  mutate(GFI = as.numeric(GFI)/100) |>
+  select(-c(temp, perc)) ->
+  evals
+```"
+"1","Warning: There was 1 warning in `mutate()`.
+ℹ In argument: `DMS = as.numeric(DMS)`.
+Caused by warning:
+! NAs introduced by coercion
+"
