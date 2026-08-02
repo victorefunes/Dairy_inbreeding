@@ -1,4 +1,4 @@
-library(tidyverse)
+#library(tidyverse)
 
 #Base scenario
 yob_start <- 1997
@@ -7,11 +7,11 @@ yob_prg <- 2010
 ratio <- 50
 perc <- "p95"
 
-pwd <- getwd()
-folder <- str_split(pwd, "/Box/Dairy_inbreeding")[[1]][1]
-setwd(paste0(folder, "/Box/Dairy_inbreeding/code"))
+#pwd <- getwd()
+#folder <- str_split(pwd, "/Dairy_inbreeding")[[1]][1]
+#setwd(paste0(folder, "/Dairy_inbreeding/code"))
 
-source("generate_db.R")
+source("generate_db_rr.R")
 library(fixest)
 
 data_full |>
@@ -150,7 +150,7 @@ etable(fit1, fit2, fit3, fit4,
        label = "tab:table1",
        extralines = list("p-value for nonzero pre-effect"= c("", pval_2, pval_3, pval_4)),
        headers = c("No covariates", "No covariates", "Traits", "Traits and interactions"),
-       file = paste0(folder, "/Box/Dairy_inbreeding/tables/results_table_alt.tex"))
+       file = "../tables/results_table_alt.tex")
 
 # ATE
 data_full|> 
@@ -619,24 +619,36 @@ etable(fit5, fit6, fit7,
        title = "Difference-in-Differences estimates (quarter fixed effects)",
        label = "tab:table3",
        headers = c("No covariates", "Traits", "Traits and interactions"),
-       file = paste0(folder, "/Box/Dairy_inbreeding/tables/results_table_quarter.tex"))
+       file = "../tables/results_table_quarter.tex")
+
+### Cost benefits analysis
+
+data_full |>
+  mutate(NM_cor = NM-40.11*inbreeding) ->
+  data_full
 
 # benefits
 num_cattle <- c(9.05, 9.15, 9.15, 9.318, 9.204, 9.133, 9.202, 9.233, 
-                     9.25, 9.3, 9.4, 9.4, 9.3, 9.35)
+                9.25, 9.3, 9.4, 9.4, 9.3, 9.35)
 
 
 data_full |> 
   filter(yob > 2005 & yob < 2020) |>
   group_by(yob) |>
-  summarise(NM = mean(NM_unadj, na.rm = TRUE)) |>
+  summarise(NM_cor = mean(NM_cor, na.rm = TRUE),
+            NM = mean(NM_unadj, na.rm = TRUE)) |>
   ungroup() |>
   arrange(yob) |> 
   mutate(num_cattle = num_cattle, 
-         NM_total = num_cattle*NM) ->
+         NM = num_cattle*NM,
+         NM_total = num_cattle*NM_cor) ->
   benefit
 
-sum(benefit[benefit$yob > 2011, "NM_total"])
+r <- 0.05
+disc <- c(1/(1+r), 1/(1+r)^2, 1/(1+r)^3, 1/(1+r)^4, 1/(1+r)^5, 
+          1/(1+r)^6, 1/(1+r)^7, 1/(1+r)^8)
+
+benefit[benefit$yob > 2011,]$NM_total %*% disc
 
 ## Cost estimations
 data_full |> 
@@ -645,7 +657,7 @@ data_full |>
   group_by(yob, treat) |> 
   summarise(inbreeding = mean(inbreeding, na.rm = TRUE)) |> 
   pivot_wider(id_cols = "yob", names_from = "treat", values_from = "inbreeding") |>
-  mutate(cost_animal = 24.75*(treatment-control)) ->
+  mutate(cost_animal = 40.11*(treatment-control)) ->
   cost
 
 cost$num_cattle <- c(9.05, 9.15, 9.15, 9.318, 9.204, 9.133, 9.202, 9.233, 
@@ -655,14 +667,13 @@ cost |>
   mutate(total_cost = cost_animal*num_cattle) ->
   cost
 
-sum(cost[cost$yob > 2011, "total_cost"])
-sum(cost[cost$yob > 2011, "total_cost"])/sum(benefit[benefit$yob > 2011, "NM_total"])
+cost[cost$yob > 2011,]$total_cost %*% disc
 
 data_full |> 
   filter(yob > 2005 & yob < 2020) |> 
   group_by(yob) |> 
   summarise(inbreeding = mean(inbreeding, na.rm = TRUE)) |>
-  mutate(cost_animal = 24.75*(inbreeding - 6.25)) ->
+  mutate(cost_animal = 40.11*(inbreeding - 6.25)) ->
   cost
 
 cost$num_cattle <- c(9.05, 9.15, 9.15, 9.318, 9.204, 9.133, 9.202, 9.233, 
@@ -672,7 +683,7 @@ cost |>
   mutate(total_cost = cost_animal*num_cattle) ->
   cost
 
-sum(cost[cost$yob > 2011, "total_cost"])
+cost[cost$yob > 2011,]$total_cost %*% disc
 sum(cost[cost$yob > 2011, "total_cost"])/sum(benefit[benefit$yob > 2011, "NM_total"])
 
 # Inbreeding plot
@@ -724,7 +735,7 @@ data_full |>
   geom_line(data = data_sum |> mutate(sire_id = treat), 
             aes(x = yob, y = inb_m, color = treat), size = 1.5) +
   geom_point(data = data_sum |> mutate(sire_id = treat), 
-            aes(x = yob, y = inb_m, color = treat), size = 2) +
+             aes(x = yob, y = inb_m, color = treat), size = 2) +
   geom_vline(xintercept = 2010, linetype = 2) +
   xlab("Year of Birth") + ylab("Inbreeding rate") +
   scale_x_continuous(breaks = 2005:2017) + 
