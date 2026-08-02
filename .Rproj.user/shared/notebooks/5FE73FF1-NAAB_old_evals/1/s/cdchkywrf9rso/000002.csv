@@ -1,0 +1,16 @@
+"0","```r
+evals |> 
+  rename(temp = pta_ccr) |>
+  mutate(pta_ccr = str_split_fixed(temp, \" \", 2)[,1],
+         pta_ccr_rel = str_split_fixed(temp, \" \", 2)[,2]) |>
+  separate(pta_ccr_rel, into = c(\"pta_ccr_rel\", \"chars\"), sep = -3) |>
+  mutate(pta_ccr = as.numeric(pta_ccr),
+         pta_ccr_rel = as.numeric(pta_ccr_rel)/100) |>
+  select(-c(chars, temp))  ->
+  evals
+```"
+"1","Warning: There was 1 warning in `mutate()`.
+ℹ In argument: `pta_ccr = as.numeric(pta_ccr)`.
+Caused by warning:
+! NAs introduced by coercion
+"

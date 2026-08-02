@@ -1,0 +1,15 @@
+"0","```r
+evals |>
+  mutate(PTI = as.numeric(PTI),
+         CM = as.numeric(CM),
+         FM = as.numeric(FM),
+         GM = as.numeric(GM)) ->
+  evals
+```"
+"1","Warning: There were 4 warnings in `mutate()`.
+The first warning was:
+ℹ In argument: `PTI = as.numeric(PTI)`.
+Caused by warning:
+! NAs introduced by coercion
+ℹ Run ]8;;ide:run:dplyr::last_dplyr_warnings()dplyr::last_dplyr_warnings()]8;; to see the 3 remaining warnings.
+"

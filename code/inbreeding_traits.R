@@ -10,8 +10,13 @@ library(ggrepel)
 library(ggfortify)
 library(ggh4x)
 
+<<<<<<< HEAD
 folder <- "C:/Users/victorf2"
 #folder <- "C:/Users/victo"
+=======
+#folder <- "C:/Users/victorf2"
+folder <- "C:/Users/victo"
+>>>>>>> second-repo-remote/main
 
 setwd(paste0(folder, "/Box/dairy_matching/code/AISS data"))
 

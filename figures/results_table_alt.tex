@@ -1,0 +1,56 @@
+
+\begin{table}[htbp]
+   \caption{\label{tab:table1} Difference-in-Differences estimates from models 1 to 4}
+   \bigskip
+   \centering
+   \begin{tabular}{lcccc}
+      \toprule
+       & \multicolumn{4}{c}{inbreeding}\\
+       & \multicolumn{2}{c}{No covariates} & Traits & Traits and interactions \\ 
+      \midrule 
+      treat $\times$ post $=$ 1      & 1.453$^{***}$ &               &               &   \\   
+                                     & (0.4250)      &               &               &   \\   
+      treat $\times$ yob $=$ 2005    &               & 0.0944        & 0.0489        & 0.0252\\   
+                                     &               & (0.2975)      & (0.2988)      & (0.2829)\\   
+      treat $\times$ yob $=$ 2006    &               & -0.2183       & -0.1182       & -0.2789\\   
+                                     &               & (0.3067)      & (0.2933)      & (0.2534)\\   
+      treat $\times$ yob $=$ 2007    &               & 0.2328        & 0.2826        & 0.2848\\   
+                                     &               & (0.3038)      & (0.2676)      & (0.2534)\\   
+      treat $\times$ yob $=$ 2008    &               & 0.4035        & 0.3246        & 0.3294\\   
+                                     &               & (0.3148)      & (0.2798)      & (0.2425)\\   
+      treat $\times$ yob $=$ 2010    &               & -0.4589       & -0.4721$^{*}$ & -0.5583$^{**}$\\   
+                                     &               & (0.2827)      & (0.2825)      & (0.2667)\\   
+      treat $\times$ yob $=$ 2011    &               & -0.0164       & -0.0455       & -0.1671\\   
+                                     &               & (0.3599)      & (0.2596)      & (0.2511)\\   
+      treat $\times$ yob $=$ 2012    &               & 1.224$^{**}$  & 1.252$^{**}$  & 1.151$^{*}$\\   
+                                     &               & (0.4906)      & (0.5633)      & (0.5981)\\   
+      treat $\times$ yob $=$ 2013    &               & 1.433$^{***}$ & 1.083$^{**}$  & 0.9980$^{**}$\\   
+                                     &               & (0.4124)      & (0.4631)      & (0.4725)\\   
+      treat $\times$ yob $=$ 2014    &               & 1.780$^{***}$ & 1.600$^{***}$ & 1.501$^{***}$\\   
+                                     &               & (0.3017)      & (0.3513)      & (0.3068)\\   
+      treat $\times$ yob $=$ 2015    &               & 1.637$^{***}$ & 1.363$^{***}$ & 1.255$^{***}$\\   
+                                     &               & (0.3453)      & (0.4159)      & (0.4256)\\   
+      treat $\times$ yob $=$ 2016    &               & 2.414$^{***}$ & 1.766$^{***}$ & 1.710$^{***}$\\   
+                                     &               & (0.2424)      & (0.2697)      & (0.2564)\\   
+      treat $\times$ yob $=$ 2017    &               & 2.849$^{***}$ & 2.770$^{***}$ & 2.734$^{***}$\\   
+                                     &               & (0.4456)      & (0.4429)      & (0.4507)\\   
+      treat $\times$ yob $=$ 2018    &               & 3.417$^{***}$ & 3.576$^{***}$ & 3.515$^{***}$\\   
+                                     &               & (0.4530)      & (0.4566)      & (0.4847)\\   
+      treat $\times$ yob $=$ 2019    &               & 2.005$^{**}$  & 2.071$^{**}$  & 2.022$^{**}$\\   
+                                     &               & (0.8611)      & (0.8827)      & (0.8785)\\   
+      p-value for nonzero pre-effect &               & 0.416         & 0.498         & 0.107\\  
+      Number of clusters             & 185           & 185           & 185           & 185\\  
+       \\
+      Observations                   & 15,491        & 15,491        & 15,490        & 15,490\\  
+      R$^2$                          & 0.16988       & 0.47369       & 0.49938       & 0.50467\\  
+      Within R$^2$                   & 0.00702       & 0.01235       & 0.04150       & 0.05163\\  
+       \\
+      treat fixed effects            & $\checkmark$  & $\checkmark$  & $\checkmark$  & $\checkmark$\\   
+      post fixed effects             & $\checkmark$  &               &               & \\  
+      yob fixed effects              &               & $\checkmark$  & $\checkmark$  & $\checkmark$\\   
+      parent\_company fixed effects  &               &               & $\checkmark$  & $\checkmark$\\   
+      \bottomrule
+   \end{tabular}
+\end{table}
+
+

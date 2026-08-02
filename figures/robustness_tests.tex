@@ -1,0 +1,39 @@
+
+\begin{table}[htbp]
+   \caption{\label{tab:table2} Alternative cutoffs from progeny distribution}
+   \centering
+   \begin{tabular}{lcccc}
+      \tabularnewline \midrule \midrule
+      Dependent Variable: & \multicolumn{4}{c}{inbreeding}\\
+                                   & Percentile 75         & Percentile 90        & Percentile 95        & Percentile 99 \\   
+      \midrule
+      \emph{Variables}\\
+      $treat \times\mathbf{I}(yob = 2005)$  & -0.381 (0.449)        & -0.391 (0.326)       & 0.095 (0.295)        & -0.587 (0.485)\\   
+      $treat \times\mathbf{I}(yob = 2006)$  & -0.091 (0.371)        & -0.098 (0.309)       & -0.158 (0.292)       & -0.718 (0.557)\\   
+      $treat \times\mathbf{I}(yob = 2007)$  & 0.462 (0.364)         & 0.308 (0.289)        & 0.350 (0.268)        & 0.515 (0.474)\\   
+      $treat \times\mathbf{I}(yob = 2008)$  & -0.430 (0.338)        & -0.281 (0.273)       & 0.311 (0.285)        & -0.231 (0.443)\\   
+      $treat \times\mathbf{I}(yob = 2010)$  & -0.728 (0.549)        & -0.673$^{*}$ (0.344) & -0.472$^{*}$ (0.285) & -0.566 (0.344)\\   
+      $treat \times\mathbf{I}(yob = 2011)$  & -0.134 (0.311)        & -0.316 (0.300)       & -0.090 (0.262)       & -0.325 (0.421)\\   
+      $treat \times\mathbf{I}(yob = 2012)$  & 0.792$^{***}$ (0.299) & 1.40$^{***}$ (0.536) & 1.25$^{**}$ (0.564)  & 0.029 (0.634)\\   
+      $treat \times\mathbf{I}(yob = 2013)$  & 0.733 (0.472)         & 0.112 (0.578)        & 1.11$^{**}$ (0.477)  & 0.305 (0.884)\\   
+      $treat \times\mathbf{I}(yob = 2014)$  & 1.51$^{***}$ (0.414)  & 1.48$^{***}$ (0.327) & 1.85$^{***}$ (0.298) & 0.211 (0.736)\\   
+      $treat \times\mathbf{I}(yob = 2015)$  & 1.22$^{***}$ (0.358)  & 1.22$^{***}$ (0.350) & 1.38$^{***}$ (0.407) & 0.594 (1.00)\\   
+      $treat \times\mathbf{I}(yob = 2016)$  &                       &                      & 1.74$^{***}$ (0.272) & 0.359 (0.669)\\   
+      $treat \times\mathbf{I}(yob = 2017)$  &                       &                      & 2.78$^{***}$ (0.454) & 1.14 (0.789)\\      
+      \midrule
+      \emph{Fixed-effects}\\
+      treat                        & Yes                   & Yes                  & Yes                  & Yes\\  
+      yob                          & Yes                   & Yes                  & Yes                  & Yes\\  
+      parent\_company              & Yes                   & Yes                  & Yes                  & Yes\\  
+      \midrule
+      \emph{Fit statistics}\\
+      Observations                 & 14,896                & 14,786               & 14,480               & 8,503\\  
+      R$^2$                        & 0.46217               & 0.46259              & 0.46779              & 0.37885\\  
+      Within R$^2$                 & 0.03238               & 0.03464              & 0.04188              & 0.03884\\  
+      \midrule \midrule
+      \multicolumn{5}{l}{\emph{Clustered (sire\_id) standard-errors in parentheses}}\\
+      \multicolumn{5}{l}{\emph{Signif. Codes: ***: 0.01, **: 0.05, *: 0.1}}\\
+   \end{tabular}
+\end{table}
+
+

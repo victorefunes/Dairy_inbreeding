@@ -53,6 +53,7 @@ naab <- naab |>
 naab <- naab |>
   mutate(id_number = stringr::str_replace(id_number, "\\.", ""),
          id_number = str_pad(id_number, width = 12, side = "left", pad = "0"),
+<<<<<<< HEAD
          reg_id = paste0(breed, country, id_number),
          sire_id_number = stringr::str_replace(sire_id_number, "\\.", ""),
          sire_id_number = str_pad(sire_id_number, width = 12, side = "left", pad = "0"),
@@ -62,6 +63,17 @@ naab <- naab |>
          mgs_id_number = str_pad(mgs_id_number, width = 12, side = "left", pad = "0"),
          mgs_id = paste0(mgs_breed, mgs_country, mgs_id_number),
          mgs_id = replace(mgs_id, mgs_id == "NANANA", NA),
+=======
+         reg_id = paste0(breed, country, id_number), 
+         sire_id_number = stringr::str_replace(sire_id_number, "\\.", ""),
+         sire_id_number = str_pad(sire_id_number, width = 12, side = "left", pad = "0"),
+         sire_id = paste0(sire_breed, sire_country, sire_id_number),
+         sire_id = replace(sire_id, sire_id == "NANANA", NA), 
+         mgs_id_number = stringr::str_replace(mgs_id_number, "\\.", ""),
+         mgs_id_number = str_pad(mgs_id_number, width = 12, side = "left", pad = "0"),
+         mgs_id = paste0(mgs_breed, mgs_country, mgs_id_number),
+         mgs_id = replace(mgs_id, mgs_id == "NANANA", NA), 
+>>>>>>> second-repo-remote/main
          dam_id_number = stringr::str_replace(dam_id_number, "\\.", ""),
          dam_id_number = str_pad(dam_id_number, width = 12, side = "left", pad = "0"),
          dam_id = paste0(dam_breed, dam_country, dam_id_number),
@@ -121,7 +133,11 @@ query <- "SELECT
   NM as NM,
   NM_unadj as NM_unadj,
   TPI,
+<<<<<<< HEAD
   udder_composite,
+=======
+  udder_composite, 
+>>>>>>> second-repo-remote/main
   body_weight_composite,
   feet_legs_composite,
   aaa_rating,
@@ -139,13 +155,18 @@ naab_aiss <- bq_table_download(naab_aiss)
 naab_aiss <- naab_aiss |>
   separate(period, into = c("year", "per_num"), sep = "-", remove = FALSE) |>
   mutate(dob = ymd(dob),
+<<<<<<< HEAD
          yob = year(dob),
+=======
+         yob = year(dob), 
+>>>>>>> second-repo-remote/main
          id_number = stringr::str_replace(id_number, "\\.", ""),
          id_number = str_pad(id_number, width = 12, side = "left", pad = "0"),
          reg_id = paste0(breed, country, id_number))
 
 # Download "old" data
 query <- "SELECT
+<<<<<<< HEAD
   reg_id,
   reg_name,
   country,
@@ -217,6 +238,79 @@ query <- "SELECT
   GM,
   GTPI,
   sire_name,
+=======
+  reg_id, 
+  reg_name,
+  country,
+  breed,
+  naab_code,            
+  status, 
+  controller_name,
+  controller_number,
+  dob, 
+  yob, 
+  aaa_codes, 
+  genetic_codes,
+  beta_casein, 
+  kappa_casein,
+  beta_lactaglobulin, 
+  haplotypes, 
+  num_dtrs, 
+  num_herds, 
+  reliability, 
+  pta_milk, 
+  pta_fat_lb, 
+  pta_protein_lb, 
+  pta_scs, 
+  pta_pl, 
+  pta_dpr, 
+  pta_hcr, 
+  pta_ccr, 
+  pta_scr, 
+  pta_liv, 
+  pta_type,  
+  pta_gest_length, 
+  pta_heifer_liv,
+  pta_efcalving,
+  pta_mastitis, 
+  pta_metritis, 
+  pta_disp_abomasum, 
+  pta_ketosis, 
+  pta_r_placenta, 
+  pta_rear_legs_rear,
+  pta_foot_leg_score, 
+  pta_teat_rear_place, 
+  pta_rump_angle,
+  pta_thurl_width,
+  pta_rear_legs_side,
+  pta_foot_angle, 
+  pta_fore_udder, 
+  pta_rear_udder_height,
+  pta_rear_udder_width,
+  pta_udder_cleft, 
+  pta_udder_depth, 
+  pta_teat_front_place,
+  pta_teat_length, 
+  pta_milk_fever,
+  pta_stature, 
+  pta_strength, 
+  pta_mobility,
+  pta_milk_speed, 
+  pta_dairy_form, 
+  pta_body_depth, 
+  sire_ce, 
+  daughter_ce, 
+  sire_sb, 
+  daughter_sb, 
+  udder_composite, 
+  NM, 
+  PTI,
+  CM, 
+  FM,
+  GM, 
+  GTPI,
+  sire_name, 
+>>>>>>> second-repo-remote/main
   mgs_name,
   status_alt
 FROM
@@ -228,7 +322,11 @@ naab_old <- bq_table_download(naab_old)
 
 # Join animal data with sires data
 naab <- left_join(naab, naab_old[,c("reg_id", "sire_name", "mgs_name",
+<<<<<<< HEAD
                                     "status_alt", "controller_number",
+=======
+                                    "status_alt", "controller_number", 
+>>>>>>> second-repo-remote/main
                                     "controller_name")], by = "reg_id")
 
 # Keep only unique observations and remove data with missing sire and dam data
@@ -251,9 +349,15 @@ ix = 0
 
 while(cnt != 0){
   connect_temp <- connect
+<<<<<<< HEAD
   names(connect_temp) <- c(paste0('sire_id_g', as.character(ix)),
                            paste0('sire_id_g', as.character(ix+1)))
   connections <- left_join(connections, connect_temp,
+=======
+  names(connect_temp) <- c(paste0('sire_id_g', as.character(ix)), 
+                           paste0('sire_id_g', as.character(ix+1)))
+  connections <- left_join(connections, connect_temp, 
+>>>>>>> second-repo-remote/main
                            by = paste0('sire_id_g', as.character(ix)))
   ix <- ix + 1
   cnt <- table(connections[, paste0('sire_id_g', as.character(ix))]) |>
@@ -266,7 +370,11 @@ naab_line <- connections[, -18]
 rm(connections, connect)
 
 naab_line  |>
+<<<<<<< HEAD
   pivot_longer(sire_id_g0:sire_id_g15, names_to = "generation",
+=======
+  pivot_longer(sire_id_g0:sire_id_g15, names_to = "generation", 
+>>>>>>> second-repo-remote/main
                values_to = "sire_id") |>
   separate(generation, into = c("type", "id", "gen"), sep = "_") |>
   select(-id) |>
@@ -274,7 +382,11 @@ naab_line  |>
   separate(gen, into = c("g_var", "gen_num"), sep = 1) |>
   select(-g_var) |>
   mutate(gen_num = as.numeric(gen_num)+1) ->
+<<<<<<< HEAD
   naab_line
+=======
+  naab_line 
+>>>>>>> second-repo-remote/main
 
 
 # Top sires
@@ -287,29 +399,51 @@ naab_sample <- left_join(naab_sample, naab[, c("reg_id", "yob", "breed")],
                          by = "reg_id")
 
 # Identify number of sons (1st generation) to define superstars
+<<<<<<< HEAD
 sons <- naab_sample |>
   filter((yob_sire > yob_start & yob_sire < yob_end) & gen_num == 1) |>
   group_by(sire_id) |>
   summarise(N = n()) |>
   arrange(desc(N)) |>
   data.frame() |>
+=======
+sons <- naab_sample |> 
+  filter((yob_sire > yob_start & yob_sire < yob_end) & gen_num == 1) |>  
+  group_by(sire_id) |> 
+  summarise(N = n()) |> 
+  arrange(desc(N)) |>
+  data.frame() |> 
+>>>>>>> second-repo-remote/main
   sum_up(N, d = TRUE) |>
   data.frame() |>
   select(perc) |>
   as.integer()
 
+<<<<<<< HEAD
 naab_sample |>
   filter(yob_sire > yob_start & yob_sire < yob_end &
            gen_num == 1) |>
   group_by(sire_id) |>
   summarise(N = n()) |>
   arrange(desc(N)) |>
+=======
+naab_sample |> 
+  filter(yob_sire > yob_start & yob_sire < yob_end & 
+           gen_num == 1) |> 
+  group_by(sire_id) |> 
+  summarise(N = n()) |> 
+  arrange(desc(N)) |> 
+>>>>>>> second-repo-remote/main
   data.frame() |>
   mutate(superstar = ifelse(N > sons, 1, 0)) |>
   select(c(sire_id, superstar)) ->
   sires
 
+<<<<<<< HEAD
 # Matching estimator
+=======
+# Matching estimator 
+>>>>>>> second-repo-remote/main
 naab_old |>
   filter(reg_id %in% sires[sires$superstar == 1, "sire_id"]) |>
   tab(yob)
@@ -320,7 +454,11 @@ naab_old |>
   base_sample
 
 # Convert all genetic codes to dummies
+<<<<<<< HEAD
 data_1 <- base_sample |>
+=======
+data_1 <- base_sample |> 
+>>>>>>> second-repo-remote/main
   filter(breed == "HO") |>
   mutate(TR = ifelse(str_detect(genetic_codes, "TR"), 1, 0),
          TC = ifelse(str_detect(genetic_codes, "TC"), 1, 0),
@@ -379,6 +517,7 @@ data_1 <- base_sample |>
          BB = ifelse(str_detect(kappa_casein, "BB"), 1, 0),
          BE = ifelse(str_detect(kappa_casein, "BE"), 1, 0)) |>
   select(c(reg_id, reg_name, yob, pta_milk, pta_fat_lb,
+<<<<<<< HEAD
            pta_protein_lb, pta_scs, pta_pl, pta_dpr,
            pta_hcr, pta_ccr, pta_liv, pta_type, pta_gest_length,
            pta_heifer_liv, pta_efcalving, pta_mastitis, pta_metritis,
@@ -395,16 +534,42 @@ data_1 <- base_sample |>
            pta_foot_angle, pta_fore_udder, pta_rear_udder_height,
            pta_rear_udder_width, pta_udder_cleft, pta_udder_depth,
            pta_teat_front_place, pta_teat_length, pta_milk_fever,
+=======
+           pta_protein_lb, pta_scs, pta_pl, pta_dpr, 
+           pta_hcr, pta_ccr, pta_liv, pta_type, pta_gest_length,
+           pta_heifer_liv, pta_efcalving, pta_mastitis, pta_metritis,
+           pta_disp_abomasum, NM, CM, FM, GM, superstar, num_dtrs, 
+           num_herds, pta_strength, pta_mobility, TR, TC, TV, TD, 
+           TL, TM, TW, TY, TP, BL, BY, CV, BR, DW, M, D, RC, 
+           PC, CD, JNSC, JNSC, AH1C, 
+           AH2C, AH2T, BH2C, BH2T, BHP, BHM, BHW, HH0C, HH1C, HH2C,
+           HH3C, HH5C, HH1T, HH2T, HH3T, HH4T, HH5T, HH6T, HHRC,
+           HHCC, HCDT, HCDC, HHPA, HDRC, JH1C, JH1F, JHP, A1A1, 
+           A1A2, A2A2, AA, AB, AE, BB, BE, pta_r_placenta,
+           pta_rear_legs_rear, pta_foot_leg_score, pta_teat_rear_place, 
+           pta_rump_angle, pta_thurl_width, pta_rear_legs_side,
+           pta_foot_angle, pta_fore_udder, pta_rear_udder_height, 
+           pta_rear_udder_width, pta_udder_cleft, pta_udder_depth, 
+           pta_teat_front_place, pta_teat_length, pta_milk_fever, 
+>>>>>>> second-repo-remote/main
            pta_stature, pta_dairy_form, pta_body_depth, sire_ce,
            daughter_ce, controller_number)) |>
   data.frame()
 
 # Convert missing values to zero
+<<<<<<< HEAD
 data_1[is.na(data_1)] <- 0
 
 # Download inbreeding data
 query <- "SELECT
   reg_id,
+=======
+data_1[is.na(data_1)] <- 0 
+
+# Download inbreeding data
+query <- "SELECT
+  reg_id, 
+>>>>>>> second-repo-remote/main
   inbreeding
 FROM
   CDN_data.CDN_bulls
@@ -418,7 +583,11 @@ data_1 |>
   mutate(inbreeding = ifelse(!is.na(inbreeding), inbreeding/100, 0)) ->
   data_1
 
+<<<<<<< HEAD
 # Load genetics companies data
+=======
+# Load genetics companies data 
+>>>>>>> second-repo-remote/main
 companies <- read_csv("../data/company_info.csv")
 
 companies |>
@@ -433,11 +602,19 @@ companies |>
   select(-assigned) ->
   companies
 
+<<<<<<< HEAD
 data_1 <- left_join(data_1, companies,
                        by = join_by(controller_number == primary_stud_code))
 data_1 |>
   mutate(parent_company = replace(parent_company, is.na(parent_company), "Other")) ->
   data_1
+=======
+data_1 <- left_join(data_1, companies, 
+                       by = join_by(controller_number == primary_stud_code))
+data_1 |>
+  mutate(parent_company = replace(parent_company, is.na(parent_company), "Other")) ->
+  data_1	
+>>>>>>> second-repo-remote/main
 
 ## Convert company names to dummies
 data_1 |>
@@ -467,8 +644,13 @@ match_data_1 <- matchit(superstar ~ pta_milk+pta_fat_lb+pta_protein_lb+pta_pl+
                           HH2C+HH5C+HH1T+HH2T+HH4T+HH5T+HH6T+HHRC+HCDT+HCDC+
                           A1A1+A1A2+A2A2+AA+AB+BB+abs+alta_gen+crv+genex+ips+
                           jlg+other+stg+ssires+semex,
+<<<<<<< HEAD
                         data = data_1, method = "nearest", replace = TRUE,
                         verbose = TRUE, ratio = ratio, distance = "glm",
+=======
+                        data = data_1, method = "nearest", replace = TRUE, 
+                        verbose = TRUE, ratio = ratio, distance = "glm", 
+>>>>>>> second-repo-remote/main
                         link = "logit", discard = "none")
 
 # Identify matches
@@ -490,7 +672,11 @@ match.data(match_data_1, distance = "pscore") |>
 matches <- get_matches(match_data_1, distance = "pscore") |>
   select(id, subclass, reg_id)
 
+<<<<<<< HEAD
 match_data_1 |>
+=======
+match_data_1 |> 
+>>>>>>> second-repo-remote/main
   match.data(distance = "pscore", drop.unmatched = FALSE) |>
   left_join(matches, by = "reg_id") |>
   mutate(group = case_when(!is.na(subclass)  & superstar == 1 ~ "Treated",
@@ -499,11 +685,16 @@ match_data_1 |>
   filter(inbreeding > 0) |>
   ggplot(aes(x = inbreeding, after_stat(density))) +
   geom_density(aes(color = group), size = .75) +
+<<<<<<< HEAD
   theme_bw() +
+=======
+  theme_bw() + 
+>>>>>>> second-repo-remote/main
   geom_hline(yintercept = 0) +
   xlab("Inbreeding rate") + ylab("Density") +
   theme(legend.position = "bottom",
         legend.title = element_blank(),
+<<<<<<< HEAD
         text = element_text(family = "Palatino"))
 
 ### Balance plot
@@ -538,6 +729,42 @@ v <- data.frame(old = c("pta_milk", "pta_fat_lb", "pta_protein_lb", "pta_pl",
                         "TD", "TL", "TM",  "TY", "TP", "BY", "BR", "D", "RC",
                         "CD", "HH1C", "HH2C",  "HH5C", "HH1T", "HH2T", "HH4T",
                         "HH5T", "HH6T", "HHRC", "HCDT", "HCDC", "A1A1", "A1A2",
+=======
+        text = element_text(family = "Palatino")) 
+
+### Balance plot
+v <- data.frame(old = c("pta_milk", "pta_fat_lb", "pta_protein_lb", "pta_pl", 
+                        "pta_dpr", "pta_hcr", "pta_ccr", "pta_liv", "pta_type",
+                        "pta_gest_length", "pta_heifer_liv", "pta_efcalving",
+                        "pta_mastitis", "pta_metritis", "pta_strength", 
+                        "pta_rear_legs_rear", "pta_foot_leg_score", 
+                        "pta_teat_rear_place", "pta_rump_angle", "pta_thurl_width", 
+                        "pta_rear_legs_side", "pta_foot_angle", "pta_fore_udder", 
+                        "pta_rear_udder_height", "pta_rear_udder_width", 
+                        "pta_udder_cleft", "pta_udder_depth", 
+                        "pta_teat_front_place", "pta_teat_length", "pta_milk_fever",
+                        "pta_stature", "pta_dairy_form", "pta_body_depth", 
+                        "sire_ce", "daughter_ce", "TR", "TC", "TD", "TL", "TM", 
+                        "TY", "TP", "BY", "BR", "D", "RC", "CD", "HH1C", "HH2C", 
+                        "HH5C", "HH1T", "HH2T", "HH4T", "HH5T", "HH6T", "HHRC", 
+                        "HCDT", "HCDC", "A1A1", "A1A2", "A2A2", "AA", "AB", "BB",
+                        "abs", "alta_gen", "crv", "genex", "ips", "jlg", "other",
+                        "stg", "ssires", "semex"),
+                new = c("Milk PTA", "Fat PTA", "Protein PTA", "Prod. life PTA", 
+                        "DPR PTA", "HCR PTA", "CCR PTA", "Liveability PTA", "Type PTA",
+                        "Gest. length PTA", "Heifer liv. PTA", "Eff. calving PTA",
+                        "Mastitis PTA", "Metritis PTA", "Strength PTA", 
+                        "Rear legs (r) PTA", "Foot leg score PTA", 
+                        "Teat rear place PTA", "Rump angle PTA", "Thurl width PTA", 
+                        "Rear legs(s) PTA", "Foot angle PTA", "Fore udder PTA", 
+                        "Rear udder ht. PTA", "Rear udder wt. PTA", "Udder cleft PTA", 
+                        "Udder depth PTA", "Teat front place PTA", "Teat length PTA", 
+                        "Milk fever PTA", "Stature PTA", "Dairy form PTA", 
+                        "Body depth PTA", "Sire CE", "Daughter CE", "TR", "TC", 
+                        "TD", "TL", "TM",  "TY", "TP", "BY", "BR", "D", "RC", 
+                        "CD", "HH1C", "HH2C",  "HH5C", "HH1T", "HH2T", "HH4T", 
+                        "HH5T", "HH6T", "HHRC", "HCDT", "HCDC", "A1A1", "A1A2", 
+>>>>>>> second-repo-remote/main
                         "A2A2", "AA", "AB", "BB", "ABS Global", "Alta Genetics",
                         "CRV Holding", "Genex", "IPS", "JLG Enterprises", "Other",
                         "STGenetics", "Select Sires", "Semex"))
@@ -580,6 +807,7 @@ naab_aiss |>
 naab_line |>
   filter(sire_id %in% rel_df$reg_id_alt) |>
   mutate(weight = 2^(-gen_num)) |>
+<<<<<<< HEAD
   select(c(reg_id, sire_id, weight, gen_num)) ->
   control
 
@@ -611,6 +839,39 @@ treat <- left_join(treat, cdn,
 data_full <- rbind(treat |>
                      mutate(treat  = 1),
                    control |>
+=======
+  select(c(reg_id, sire_id, weight, gen_num)) -> 
+  control
+
+control <- left_join(control, naab_old, by = "reg_id") 
+
+control <- left_join(control, cdn[, c("reg_id", "inbreeding")], 
+                     by = "reg_id") 
+
+control <- left_join(control, rel_df[, c("reg_id_alt", "pscore")], 
+                     by = join_by("sire_id" == "reg_id_alt"))
+
+control |> 
+  distinct(reg_id, .keep_all = TRUE) ->
+  control
+
+# Assemble treatment group 
+naab_line |>
+  filter(sire_id %in% rel_df$reg_id) |>
+  mutate(weight = 2^(-gen_num)) |>
+  select(c(reg_id, sire_id, weight, gen_num)) -> 
+  treat
+
+treat <- left_join(treat, naab_old, by = "reg_id") 
+
+treat <- left_join(treat, cdn, 
+                   by = "reg_id")
+
+# Put it all together
+data_full <- rbind(treat |> 
+                     mutate(treat  = 1),
+                   control |> 
+>>>>>>> second-repo-remote/main
                      select(-pscore) |>
                      mutate(treat = 0))
 
@@ -622,6 +883,7 @@ data_full |>
   select(-c(inbreeding.x, inbreeding.y)) ->
   data_full
 
+<<<<<<< HEAD
 data_full <- left_join(data_full, companies,
                     by = join_by(controller_number == primary_stud_code))
 data_full |>
@@ -631,6 +893,17 @@ data_full |>
 naab_aiss |>
   group_by(reg_id) |>
   arrange(period) |>
+=======
+data_full <- left_join(data_full, companies, 
+                    by = join_by(controller_number == primary_stud_code))
+data_full |>
+  mutate(parent_company = replace(parent_company, is.na(parent_company), "Other")) ->
+  data_full	
+
+naab_aiss |>
+  group_by(reg_id) |>
+  arrange(period) |> 
+>>>>>>> second-repo-remote/main
   slice_head(n = 1) |>
   ungroup() |>
   select(c(reg_id, NM_unadj)) ->
@@ -638,6 +911,12 @@ naab_aiss |>
 
 data_full <- left_join(data_full, NM_df, by = "reg_id")
 
+<<<<<<< HEAD
 rm(cdn, naab_aiss, naab_old, companies, control, treat, sires,
    base_sample, data_1, index_df, naab, naab_unique, match_data_1,
    rel_df, naab_line, naab_sample, inb_alt, sons, ratio, cnt, ix, NM_df)
+=======
+rm(cdn, naab_aiss, naab_old, companies, control, treat, sires, 
+   base_sample, data_1, index_df, naab, naab_unique, match_data_1,
+   rel_df, naab_line, naab_sample, inb_alt, sons, ratio, cnt, ix, NM_df)
+>>>>>>> second-repo-remote/main

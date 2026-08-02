@@ -10,7 +10,11 @@ pwd <- getwd()
 folder <- str_split(pwd, "/Box/Dairy_inbreeding")[[1]][1]
 setwd(paste0(folder, "/Box/Dairy_inbreeding/code"))
 
+<<<<<<< HEAD
 source("generate_db.R")
+=======
+source("generate_db_rr.R")
+>>>>>>> second-repo-remote/main
 library(lfe)
 library(fixest)
 
@@ -100,7 +104,11 @@ data_full %>%
          pta_ketosis+pta_r_placenta+pta_milk_fever+
          pta_stature+pta_strength+pta_dairy_form|
          yob+parent_company|0|sire_id, 
+<<<<<<< HEAD
        data = .)   ->
+=======
+       data = .) ->
+>>>>>>> second-repo-remote/main
   fit7
 
 data_full %>%
@@ -442,6 +450,7 @@ data_full|>
          line_id = as.integer(factor(sire_id, levels = unique(sire_id)))) -> 
   data_alt 
 
+<<<<<<< HEAD
 attgt <- att_gt(yname = "inbreeding", 
                 tname = "yob", 
                 idname = "id", 
@@ -452,6 +461,18 @@ attgt <- att_gt(yname = "inbreeding",
                 biters = 1500,
                 alp = 0.01,
                 data = data_alt) 
+=======
+#attgt <- att_gt(yname = "inbreeding", 
+#                tname = "yob", 
+#                idname = "id", 
+#                gname = "first_treat", 
+#                control_group = "notyettreated",
+#                panel = FALSE,
+#                bstrap = TRUE,
+#                biters = 1500,
+#                alp = 0.01,
+#                data = data_alt) 
+>>>>>>> second-repo-remote/main
 
 summary(attgt)
 

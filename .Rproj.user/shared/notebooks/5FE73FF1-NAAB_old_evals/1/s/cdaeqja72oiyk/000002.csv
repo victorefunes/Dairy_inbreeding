@@ -1,0 +1,13 @@
+"0","```r
+evals |>
+  mutate(num_dtrs = str_split_fixed(production_obs, \" \", 9)[,1] |> as.numeric(),
+         num_herds = str_split_fixed(production_obs, \" \", 9)[,3] |> as.numeric(),
+         us_perc = str_split_fixed(production_obs, \" \", 9)[,5] |> as.numeric(),
+         reliability = str_split_fixed(production_obs, \" \", 9)[,8]) |>
+  select(-production_obs) |>
+  separate(reliability, into = c(\"reliability\", \"sign\"), sep = -1) |>
+  select(-sign) |>
+  mutate(us_perc = us_perc/100,
+         reliability = as.numeric(reliability)/100) ->
+  evals
+```"

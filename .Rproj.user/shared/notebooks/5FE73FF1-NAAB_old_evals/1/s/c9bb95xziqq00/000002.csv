@@ -1,0 +1,10 @@
+"0","```r
+evals |>
+  mutate(GTPI = as.numeric(GTPI)) ->
+  evals
+```"
+"1","Warning: There was 1 warning in `mutate()`.
+ℹ In argument: `GTPI = as.numeric(GTPI)`.
+Caused by warning:
+! NAs introduced by coercion
+"

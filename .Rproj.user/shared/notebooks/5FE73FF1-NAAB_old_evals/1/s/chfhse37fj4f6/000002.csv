@@ -1,0 +1,14 @@
+"0","```r
+evals |> 
+  separate(pta_fat, into = c(\"pta_fat_lb\", \"pta_fat_lb_rel\"), sep = \",\") |>
+  separate(pta_fat_lb_rel, into = c(\"pta_fat_lb_rel\", \"chars\"), sep = -2) |>
+  mutate(pta_fat_lb = as.numeric(pta_fat_lb),
+         pta_fat_lb_rel = as.numeric(pta_fat_lb_rel)) |>
+  select(-chars)  ->
+  evals
+```"
+"1","Warning: There was 1 warning in `mutate()`.
+ℹ In argument: `pta_fat_lb = as.numeric(pta_fat_lb)`.
+Caused by warning:
+! NAs introduced by coercion
+"

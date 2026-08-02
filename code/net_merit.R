@@ -113,11 +113,19 @@ naab |>
 NM_ts <- ts(NM$NM, start = 1985, frequency = 1)
 NM_arima <- Arima(NM_ts, order = c(1, 2, 1))
 
+<<<<<<< HEAD
 NM_alt <- window(NM_ts, start = 1985, end = 2008)
 auto.arima(NM_alt)
 
 NM_alt_arima <- Arima(NM_alt, order = c(1, 1, 0), include.drift = TRUE)
 NM_for <- forecast(NM_alt_arima, h = 12)
+=======
+NM_alt <- window(NM_ts, start = 1985, end = 2009)
+auto.arima(NM_alt)
+
+NM_alt_arima <- Arima(NM_alt, order = c(1, 1, 0), include.drift = TRUE)
+NM_for <- forecast(NM_alt_arima, h = 10)
+>>>>>>> second-repo-remote/main
 
 NM_for |> 
   data.frame() |>

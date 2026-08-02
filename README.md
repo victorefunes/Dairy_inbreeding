@@ -1,4 +1,5 @@
 # Dairy_inbreeding
+<<<<<<< HEAD
 
 Replication code, data-processing scripts, and figures for the paper:
 
@@ -115,3 +116,6 @@ providers' terms.
 
 Victor Funes-Leal — Department of Agricultural Economics and Agribusiness, University of
 Arkansas.
+=======
+Code and figures for my Job Market Paper
+>>>>>>> second-repo-remote/main

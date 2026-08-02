@@ -1,0 +1,105 @@
+\documentclass[12pt,letterpaper]{article}
+\usepackage{setspace}
+\usepackage{scalerel}
+\usepackage{amsmath, amsthm, amsfonts, amssymb}
+\DeclareMathOperator*{\rint}{\ThisStyle{\rotatebox{15}{$\SavedStyle\!\int\!$}}}
+\usepackage{indentfirst}
+\usepackage[colorlinks=true,linkcolor=black,urlcolor=blue,citecolor=black]{hyperref}
+\usepackage{bm}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage{epstopdf}
+\usepackage{mathpazo}
+\usepackage{float}
+\usepackage{pgfplots}
+\usepackage[affil-it]{authblk}
+\pgfplotsset{compat=1.16}
+\usepackage{dcolumn}
+\usepackage{booktabs}
+\usepackage{afterpage}
+\usepackage[default]{lato}
+\usepackage[makeroom]{cancel}
+\usepackage{listings}
+\usepackage{lscape}
+\usepackage[left=2.5cm,right=2.5cm,top=1.5cm,bottom=1.5cm]{geometry}
+\usepackage{etoolbox}% http://ctan.org/pkg/etoolbox
+\BeforeBeginEnvironment{tabular}{\footnotesize}% Adjust tabular font size to \small
+
+%% BibTeX settings
+\usepackage[square,sort,comma,numbers]{natbib}
+\bibliographystyle{apalike}
+\bibpunct{(}{)}{,}{a}{,}{,}
+
+
+
+% Defines columns for tables
+\usepackage{array}
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+
+\definecolor{blue}{RGB}{0,114,178}
+\definecolor{red}{RGB}{213,94,0}
+\definecolor{yellow}{RGB}{240,228,66}
+\definecolor{green}{RGB}{0,158,115}
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\hypersetup{
+	colorlinks=false,
+	linkbordercolor = {white},
+	linkcolor = {blue}
+}
+
+
+
+\title{Information provision and network externalities: the impact of genomic testing on the dairy industry} 
+\author{}
+%\author[1]{Victor Funes-Leal}
+%\author[2]{Jared Hutchins}
+%\affil[1]{Department of Agricultural and Consumer Economics\\ University of Illinois}
+%\affil[2]{Department of Agricultural and Consumer Economics\\ University of Illinois}
+
+
+\date{} %date not required
+
+\begin{document}
+\maketitle
+
+\subsection*{Motivation}
+
+This article investigates the consequences of a new technology that boosts genetic productivity in the dairy industry: genomic selection for bulls. Genomic selection helps animal breeders and genetics companies identify which bulls (sires) have the highest productivity and transmit it to their offspring. This new technology increased the productivity of the dairy industry as soon as it was introduced; however, it incentivized dairy cattle breeders to mate their bulls with more closely related cows to undercut the competition and ensure a higher market share, thus leading to higher inbreeding rates (a measure of the degree of relatedness of an animal to all others.)  Inbreeding is a negative externality inflicted by breeders on themselves by pursuing short-term gains in genetic performance at the cost of reducing the diversity of the gene pool. This article argues that this increment is a consequence of introducing genomic selection.
+
+Our research question is: Did genomic selection cause increased inbreeding rates by incentivizing breeders to \emph{double-down} on prestigious lines (families) of bulls? The introduction of genomic selection had two main consequences: higher selection intensity (breeders can identify top sires as soon as they are born) and shorter generation intervals (bulls can be marketed as young as one year old.) We show that the supply of bulls has tripled since 2010, but a higher proportion is now comprised of animals from ``prestigious'' lines. 
+
+This article fills a critical gap in the literature; there are no other papers that analyze inbreeding as a \textbf{network externality} \citep{Liebowitz1994}, \citep{Katz1985}, where companies enjoy the benefits (faster genetic gains) and suffer the costs (decreased fertility caused by the increased frequency of deleterious mutations) from changes in the size of their associated network. In this case, the pedigree (relatedness) is the force that binds all the nodes in the network, where two animals are part of the same network (line) if they descend from the same ancestor. Similarly, all articles that analyze the market for cattle genetics, such as \cite{Kerr1984}, \cite{Melton1994}, \cite{Richards1996} or \cite{Schroeder1992} study cattle as a closed system and their objective was to determine what are the implicit prices of each genetic trait using hedonic methods. These early papers then focus on the decisions taken by individual breeders or dairy farmers without paying attention to their broader impact.
+
+\subsection*{Empirical Framework}
+
+We use data on 14,800 dairy bulls sold between 2006 and 2018. The National Association
+of Animal Breeders (NAAB), a trade organization representing livestock Genetic companies selling bulls in the United States, publishes the posted price and genetic traits of all bulls being sold by their members. Traits and prices are posted three times a year at the same time that each bull’s predicted genetic traits are calculated and posted publicly by the Council on Dairy Cattle Breeding.
+
+We want to test the hypothesis that the introduction of genomic selection led to higher inbreeding rates because of increased demand for \textit{supersire} lines, descendants from bulls born between 1998 and 2004 whose number of sons is within the 95$^{th}$ percentile (or higher) of their distribution by 2020. We can't directly test the hypothesis because no control lines (bulls that were not genotyped \emph{at random}) can be used as a counterfactual.
+
+We instead use a synthetic control group that consists of all lines that did not father as many sons as supersires but whose founders were similar to them in terms of genetic traits. Those lines should have been discovered if dairy farmers cared only about traits. We match supersires to all other bulls in the market between 1998 and 2004 using propensity score matching. After identifying the founders, we build the lines by identifying all their male descendants from 2005 to 2018.
+
+Since inbreeding is assigned at birth, we average inbreeding rates across years (cohorts) and groups (treatment and control) using the following two-way fixed effects specification:
+
+\begin{equation*}
+    inbreeding_{ikt} = treat_{i}+treat_{i}*\sum_{\substack{t=2005\\t \neq 2009}}^{2017}\beta_{t}\mathbf{I}(yob=t)+\alpha_{t}+\rho_{k}+\mathbf{X}_{it}\gamma+\varepsilon_{ijt}
+\end{equation*}
+
+Where $treat_{i}$ is a dummy equal to one if $i$ is on the treatment group, $\mathbf{I}(yob=t)$ are year of birth dummies, $\alpha_{t}$ and $\rho_{k}$ are year and line fixed effects and $\mathbf{X}_{it}$ is a set of genetic traits. Our main objects of interest are the $\beta_{t}$ coefficients since they measure the Average Treatment on the Treated per year of genomic selection on supersire lines on inbreeding rates. Every year, a new set of bulls will be born, each with a given inbreeding level and a family (paternal line.) Before genomic selection, lines in treatment and control groups should have similar inbreeding rates.
+
+\subsection*{Preliminary Results}
+Our results suggest that from 2012 to 2017, inbreeding rates in the treatment group have been from 1.2 to 2.8 percent points, consistently higher than those of the control group. We test three distinct specifications, first, without any controls, then with all controls, and finally, with controls interacted with a post-intervention dummy. Pre-intervention coefficients in our design are not statistically different from zero (individually and jointly.) Each additional percent point of inbreeding rate leads to a \$23 revenue loss per cow. We estimate that increased inbreeding has led to around three to six billion dollars of losses for the industry annually since 2012. 
+
+\subsection*{Potential for discussion}
+This is the first article that deals with the consequences of genomic selection in Agricultural Economics; so far, the extant literature has addressed this issue from the point of view of Animal Scientists; we argue that these deleterious consequences result from the incentive mechanism of genetics companies. This paper also measures the economic impacts of higher inbreeding rates as the per-animal cost of each additional inbreeding percent point multiplied by the additional inbreeding rates times the total number of dairy cattle in the US (around 9.5 million heads.)
+
+
+\bibliography{references}
+\end{document}

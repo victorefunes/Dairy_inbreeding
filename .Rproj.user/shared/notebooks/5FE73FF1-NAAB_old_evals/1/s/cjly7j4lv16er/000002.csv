@@ -1,0 +1,12 @@
+"0","```r
+evals |>
+  separate(NM_percentile, into = c(\"NM_percentile\", \"perc\"), sep = -1) |>
+  mutate(NM_Percentile = as.numeric(NM_percentile)) |>
+  select(-perc) ->
+  evals
+```"
+"1","Warning: There was 1 warning in `mutate()`.
+ℹ In argument: `NM_Percentile = as.numeric(NM_percentile)`.
+Caused by warning:
+! NAs introduced by coercion
+"

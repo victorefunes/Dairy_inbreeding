@@ -1,0 +1,13 @@
+"0","```r
+evals |>
+  rename(temp = gestation_length_obs) |>
+  mutate(gestation_length_obs = str_split_fixed(temp, \" \", 4)[,1] |> as.numeric(),
+         gestation_length_dtrs = str_split_fixed(temp, \" \", 4)[,3]|> as.numeric()) |>
+  select(-temp) ->
+  evals
+```"
+"1","Warning: There was 1 warning in `mutate()`.
+ℹ In argument: `gestation_length_obs = as.numeric(str_split_fixed(temp, \" \", 4)[, 1])`.
+Caused by warning:
+! NAs introduced by coercion
+"

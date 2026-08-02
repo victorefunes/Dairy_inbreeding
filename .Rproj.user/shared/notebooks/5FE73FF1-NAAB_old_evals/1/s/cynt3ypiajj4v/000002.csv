@@ -1,0 +1,16 @@
+"0","```r
+evals |> 
+  rename(temp = pta_pl) |>
+  mutate(pta_pl = str_split_fixed(temp, \" \", 2)[,1],
+         pta_pl_rel = str_split_fixed(temp, \" \", 2)[,2]) |>
+  separate(pta_pl_rel, into = c(\"pta_pl_rel\", \"chars\"), sep = -3) |>
+  mutate(pta_pl = as.numeric(pta_pl),
+         pta_pl_rel = as.numeric(pta_pl_rel)/100) |>
+  select(-c(chars, temp))  ->
+  evals
+```"
+"1","Warning: There was 1 warning in `mutate()`.
+ℹ In argument: `pta_pl = as.numeric(pta_pl)`.
+Caused by warning:
+! NAs introduced by coercion
+"

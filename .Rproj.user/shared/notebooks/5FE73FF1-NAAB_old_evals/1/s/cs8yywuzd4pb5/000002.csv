@@ -1,0 +1,16 @@
+"0","```r
+options(warn=-1)
+library(tidyverse)
+library(bigrquery)
+library(lubridate)
+library(statar)
+library(knitr)
+library(stringi)
+library(broom)
+library(ggrepel)
+library(ggfortify)
+
+setwd(\"C:/Users/victo/Box/dairy_matching/code/AISS data\")
+
+evals <- read.csv(\"../../data/old_evals.csv\")
+```"
