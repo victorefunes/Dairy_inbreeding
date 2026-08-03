@@ -1,6 +1,0 @@
-"0","```r
-evals |>
-  mutate(dob = mdy(dob),
-         yob = year(dob)) ->
-  evals
-```"
