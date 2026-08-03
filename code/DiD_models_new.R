@@ -1,8 +1,5 @@
-<<<<<<< HEAD
-#library(tidyverse)
-=======
+
 library(tidyverse)
->>>>>>> second-repo-remote/main
 
 #Base scenario
 yob_start <- 1997
@@ -11,15 +8,10 @@ yob_prg <- 2010
 ratio <- 50
 perc <- "p95"
 
-<<<<<<< HEAD
-#pwd <- getwd()
+pwd <- getwd()
 #folder <- str_split(pwd, "/Dairy_inbreeding")[[1]][1]
 #setwd(paste0(folder, "/Dairy_inbreeding/code"))
-=======
-pwd <- getwd()
-folder <- str_split(pwd, "/Box/Dairy_inbreeding")[[1]][1]
-setwd(paste0(folder, "/Box/Dairy_inbreeding/code"))
->>>>>>> second-repo-remote/main
+setwd(paste0(pwd, "/Documents/Dairy_inbreeding/code"))
 
 source("generate_db_rr.R")
 library(fixest)
@@ -31,12 +23,7 @@ data_full |>
            month(dob) %in% c(4,5,6) ~ 2,
            month(dob) %in% c(7,8,9) ~ 3,
            month(dob) %in% c(10,11,12) ~ 4),
-<<<<<<< HEAD
          qob = paste0(yob, "-", quarter)) ->
-=======
-         qob = paste0(yob, "-", quarter),
-         company_name = ifelse(is.na(company_name), "missing", company_name)) ->
->>>>>>> second-repo-remote/main
   data_full
 
 data_full |> 
@@ -155,23 +142,12 @@ pval_4 <- test4$`Pr(>F)`[2] |> round(digits = 3)
 pwd <- getwd()
 folder <- str_split(pwd, "/Box/Dairy_inbreeding")[[1]][1]
 
-<<<<<<< HEAD
 etable(fit1, fit2, fit3, fit4, keep = "treat")
-=======
-n_clus <- c(fitstat(fit1, "g") |> as.numeric(), 
-            fitstat(fit2, "g") |> as.numeric(), 
-            fitstat(fit3, "g") |> as.numeric(), 
-            fitstat(fit4, "g") |> as.numeric())
-
-etable(fit1, fit2, fit3, fit4, keep = "treat",
-       extralines = list("Number of clusters" = n_clus))
->>>>>>> second-repo-remote/main
 etable(fit1, fit2, fit3, fit4, 
        tex = TRUE,
        keep = "treat",
        style.tex = style.tex("aer"),
        replace = TRUE,
-<<<<<<< HEAD
        title = "Difference-in-Differences estimates from Equation \\ref{eq:inb_eq}",
        label = "tab:table1",
        extralines = list("p-value for nonzero pre-effect"= c("", pval_2, pval_3, pval_4)),
@@ -180,115 +156,6 @@ etable(fit1, fit2, fit3, fit4,
 
 # ATE
 data_full|> 
-=======
-       title = "Difference-in-Differences estimates from Equation \\ref{eq:inb\\_eq}",
-       label = "tab:table1",
-       extralines = list("p-value for nonzero pre-effect"= c("", pval_2, pval_3, pval_4),
-                         "Number of clusters" = n_clus),
-       headers = c("No covariates", "No covariates", "Traits", "Traits and interactions"),
-       file = paste0(folder, "/Box/Dairy_inbreeding/tables/results_table_alt.tex"))
-
-
-## Add firm ID
-data_full %>%
-  filter_at(vars(pta_milk,pta_fat_lb,pta_protein_lb,pta_scs, pta_pl,pta_dpr, 
-                 pta_hcr, pta_ccr, pta_liv, pta_type, pta_gest_length, 
-                 pta_heifer_liv, pta_efcalving, pta_mastitis, pta_metritis, 
-                 pta_disp_abomasum, pta_ketosis, pta_r_placenta, pta_milk_fever, 
-                 pta_stature,pta_strength,pta_dairy_form), 
-            all_vars(!is.na(.))) %>%
-  filter(inbreeding >= 0 & yob > 2004 & yob < 2020) %>%
-  mutate(post = ifelse(yob > 2009, 1, 0),
-         post = factor(post)) %>%
-  feols(inbreeding ~ i(post, treat, ref = 0)|treat+post, 
-        cluster = ~sire_id+parent_company,
-        data = .)   ->
-  fit1c
-
-data_full %>%
-  filter_at(vars(pta_milk,pta_fat_lb,pta_protein_lb,pta_scs, pta_pl,pta_dpr, 
-                 pta_hcr, pta_ccr, pta_liv, pta_type, pta_gest_length, 
-                 pta_heifer_liv, pta_efcalving, pta_mastitis, pta_metritis, 
-                 pta_disp_abomasum, pta_ketosis, pta_r_placenta, pta_milk_fever, 
-                 pta_stature,pta_strength,pta_dairy_form), 
-            all_vars(!is.na(.))) %>%
-  filter(inbreeding >= 0 & yob > 2004 & yob < 2020) %>%
-  feols(inbreeding ~ i(yob, treat, ref = 2009)|treat+yob, 
-        cluster = ~sire_id+parent_company,
-        data = .)   ->
-  fit2c
-
-data_full %>%
-  filter_at(vars(pta_milk,pta_fat_lb,pta_protein_lb,pta_scs, pta_pl,pta_dpr, 
-                 pta_hcr, pta_ccr, pta_liv, pta_type, pta_gest_length, 
-                 pta_heifer_liv, pta_efcalving, pta_mastitis, pta_metritis, 
-                 pta_disp_abomasum, pta_ketosis, pta_r_placenta, pta_milk_fever, 
-                 pta_stature,pta_strength,pta_dairy_form), 
-            all_vars(!is.na(.))) %>%
-  filter(inbreeding >= 0 & yob > 2004 & yob < 2020) %>%
-  feols(inbreeding ~ i(yob, treat, ref = 2009)+pta_milk+pta_fat_lb+
-          pta_protein_lb+pta_scs+
-          pta_pl+pta_dpr+pta_hcr+pta_ccr+pta_liv+pta_type+
-          pta_gest_length+pta_heifer_liv+pta_efcalving+
-          pta_mastitis+pta_metritis+pta_disp_abomasum+
-          pta_ketosis+pta_r_placenta+pta_milk_fever+
-          pta_stature+pta_strength+pta_dairy_form|treat+yob+parent_company, 
-        cluster = ~sire_id+parent_company,
-        data = .)   ->
-  fit3c
-
-data_full %>%
-  filter_at(vars(pta_milk,pta_fat_lb,pta_protein_lb,pta_scs, pta_pl,pta_dpr, 
-                 pta_hcr, pta_ccr, pta_liv, pta_type, pta_gest_length, 
-                 pta_heifer_liv, pta_efcalving, pta_mastitis, pta_metritis, 
-                 pta_disp_abomasum, pta_ketosis, pta_r_placenta, pta_milk_fever, 
-                 pta_stature,pta_strength,pta_dairy_form), 
-            all_vars(!is.na(.))) %>%
-  filter(inbreeding >= 0 & yob > 2004 & yob < 2020) %>%
-  mutate(post = ifelse(yob > 2009, 1, 0),
-         post = factor(post)) %>%
-  feols(inbreeding ~ i(yob, treat, ref = 2009)+pta_milk+pta_fat_lb+
-          pta_protein_lb+pta_scs+pta_pl+pta_dpr+pta_hcr+pta_ccr+
-          pta_liv+pta_type+pta_gest_length+pta_heifer_liv+pta_efcalving+
-          pta_mastitis+pta_metritis+pta_disp_abomasum+
-          pta_ketosis+pta_r_placenta+pta_milk_fever+
-          pta_stature+pta_strength+pta_dairy_form+
-          pta_milk:post+pta_fat_lb:post+
-          pta_protein_lb:post+pta_scs:post+
-          pta_pl:post+pta_dpr:post+pta_hcr:post+
-          pta_ccr:post+pta_liv:post+pta_type:post+
-          pta_gest_length:post+pta_heifer_liv:post+pta_efcalving:post+
-          pta_mastitis:post+pta_metritis:post+pta_disp_abomasum:post+
-          pta_ketosis:post+pta_r_placenta:post+pta_milk_fever:post+
-          pta_stature:post+pta_strength:post+
-          pta_dairy_form:post|treat+yob+parent_company, 
-        cluster = ~sire_id+parent_company,
-        data = .)   ->
-  fit4c
-
-n_clus <- c(fitstat(fit1c, "g") |> as.numeric(), 
-            fitstat(fit2c, "g") |> as.numeric(), 
-            fitstat(fit3c, "g") |> as.numeric(), 
-            fitstat(fit4c, "g") |> as.numeric())
-
-etable(fit1c, fit2c, fit3c, fit4c, keep = "treat",
-       extralines = list("Number of clusters" = n_clus))
-etable(fit1c, fit2c, fit3c, fit4c, 
-       tex = TRUE,
-       keep = "treat",
-       style.tex = style.tex("aer"),
-       replace = TRUE,
-       title = "Difference-in-Differences estimates from Equation \\ref{eq:inb\\_eq}, using two-way clustering",
-       label = "tab:table1c",
-       extralines = list("p-value for nonzero pre-effect"= c("", pval_2, pval_3, pval_4),
-                         "Number of clusters" = n_clus),
-       headers = c("No covariates", "No covariates", "Traits", "Traits and interactions"),
-       file = paste0(folder, "/Box/Dairy_inbreeding/tables/results_table_firm.tex"))
-
-
-# ATE
-data_full |> 
->>>>>>> second-repo-remote/main
   filter_at(vars(pta_milk, pta_fat_lb, pta_protein_lb, pta_scs, pta_pl, pta_dpr, 
                  pta_hcr, pta_ccr, pta_liv, pta_gest_length, pta_type,
                  pta_heifer_liv, pta_efcalving, pta_mastitis, pta_metritis, 
@@ -352,99 +219,6 @@ vcov42 <- clubSandwich::vcovCR(fit42, cluster = data_alt$sire_id, type = "CR1S")
 
 library(margins)
 library(marginaleffects)
-
-#margins(fit12, variables = "treat", 
-#        at = list(post = "1"), 
-#        data = data_alt |> filter(treat == 1), 
-#        vcov = vcov12,
-#        vce = "delta") ->
-#  marg12
-
-#marg12 %>%
-#  tidy(conf.int = TRUE) %>%
-#  mutate(model = 1) ->
-#  mfx_1
-
-#margins(fit22, variables = "treat", 
-#        at = list(yob = as.character(2005:2019)), 
-#        data = data_alt |> filter(treat == 1), 
-#        vcov = vcov22,
-#        vce = "delta") ->
-#  marg22 
-
-#marg22 %>%
-# tidy(conf.int = TRUE) %>%
-#  mutate(model = 2) ->
-#  mfx_2
-
-#margins(fit32, variables = "treat", 
-#        at = list(yob = as.character(2005:2019)), 
-#        data = data_alt |> filter(treat == 1), 
-#        vcov = vcov32,
-#        vce = "delta") ->
-#  marg32 
-
-#marg32 %>%
-#  tidy(conf.int = TRUE) %>%
-#  mutate(model = 3) ->
-#  mfx_3
-
-#margins(fit42, variables = "treat", 
-#        at = list(yob = as.character(2005:2019)), 
-#        data = data_alt |> filter(treat == 1), 
-#        vcov = vcov42,
-#        vce = "delta") ->
-#  marg42 
-
-#marg42 %>%
-#  tidy(conf.int = TRUE) %>%
-#  mutate(model = 4) ->
-#  mfx_4
-
-#rbind(mfx_2, mfx_3, mfx_4) |>
-#  mutate(model = factor(model, labels = c("No covariates", "PTAs", "PTAs and interactions"))) |>
-#  ggplot(aes(x = at.value, y = estimate, group = 1)) + 
-#  geom_line(aes(x = at.value, y = conf.low), color = "grey", size = 0.25) +
-#  geom_line(aes(x = at.value, y = conf.high), color = "grey", size = 0.25) +
-#  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), fill="grey", alpha=0.5) +
-#  geom_point(aes(color = model), size = 3.5) +
-#  geom_line(aes(color = model)) +
-#  geom_hline(yintercept = 0) + 
-#  geom_vline(xintercept = "2010", linetype = 2) + 
-#  theme_classic() + 
-#  paletteer::scale_color_paletteer_d("rtist::vangogh") +
-#  theme(legend.title = element_blank(),
-#        legend.position = "bottom",
-#        text = element_text(family = "Palatino")) +
-#  ylab("AME and 95% Conf. Int.") +
-#  xlab("Year") +
-#  facet_wrap(.~ model, ncol = 2, nrow  = 2)
-
-#data_alt |>
-#  mutate(yob = relevel(yob, ref = "2009")) ->
-#  data_alt
-
-#avg_comparisons(
-#  fit22,
-#  variables = list(yob = "reference"),
-#  newdata = subset(data_alt, treat == 1),
-#  vcov = vcov22) ->
-#  ate_1
-
-#avg_comparisons(
-#  fit32,
-#  variables =  list(yob = "reference"),
-#  newdata = subset(data_alt, treat == 1),
-#  vcov = vcov32) ->
-#  ate_2
-
-#avg_comparisons(
-#  fit42,
-#  variables = list(yob = "reference"),
-#  newdata = subset(data_alt, treat == 1 & post == "1"),
-#  vcov = vcov42) ->
-#  ate_3
-
 
 data_full|> 
   filter_at(vars(pta_milk, pta_fat_lb, pta_protein_lb, pta_scs, pta_pl, pta_dpr, 
@@ -754,11 +528,7 @@ etable(fit5, fit6, fit7,
        title = "Difference-in-Differences estimates (quarter fixed effects)",
        label = "tab:table3",
        headers = c("No covariates", "Traits", "Traits and interactions"),
-<<<<<<< HEAD
        file = "../tables/results_table_quarter.tex")
-=======
-       file = paste0(folder, "/Box/Dairy_inbreeding/tables/results_table_quarter.tex"))
->>>>>>> second-repo-remote/main
 
 ### Cost benefits analysis
 
@@ -768,11 +538,7 @@ data_full |>
 
 # benefits
 num_cattle <- c(9.05, 9.15, 9.15, 9.318, 9.204, 9.133, 9.202, 9.233, 
-<<<<<<< HEAD
                 9.25, 9.3, 9.4, 9.4, 9.3, 9.35)
-=======
-                     9.25, 9.3, 9.4, 9.4, 9.3, 9.35)
->>>>>>> second-repo-remote/main
 
 
 data_full |> 
@@ -878,11 +644,7 @@ data_full |>
   geom_line(data = data_sum |> mutate(sire_id = treat), 
             aes(x = yob, y = inb_m, color = treat), size = 1.5) +
   geom_point(data = data_sum |> mutate(sire_id = treat), 
-<<<<<<< HEAD
              aes(x = yob, y = inb_m, color = treat), size = 2) +
-=======
-            aes(x = yob, y = inb_m, color = treat), size = 2) +
->>>>>>> second-repo-remote/main
   geom_vline(xintercept = 2010, linetype = 2) +
   xlab("Year of Birth") + ylab("Inbreeding rate") +
   scale_x_continuous(breaks = 2005:2017) + 
@@ -979,8 +741,4 @@ data_full %>%
         data = .)   ->
   fit11
 
-<<<<<<< HEAD
 etable(fit8, fit9, fit10, fit11)
-=======
-etable(fit8, fit9, fit10, fit11)
->>>>>>> second-repo-remote/main

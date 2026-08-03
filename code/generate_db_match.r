@@ -1,4 +1,3 @@
-# Load packages
 options(warn=-1)
 options(scipen=999)
 library(tidyverse)
@@ -10,6 +9,12 @@ library(Hmisc)
 library(stringi)
 library(broom)
 library(MatchIt)
+
+yob_start <- 1997
+yob_end <- 2005
+yob_prg <- 2010
+ratio <- 50
+perc <- "p95"
 
 bq_auth(email = "vf006@uark.edu")
 
@@ -614,7 +619,7 @@ data_full <- rbind(treat |>
                      select(-pscore) |>
                      mutate(treat = 0))
 
-inb_alt <- read_csv("../data/inb_alt.csv")
+inb_alt <- read_csv("C:/Users/victo/Documents/Dairy_inbreeding/data/inb_alt.csv")
 data_full <- left_join(data_full, inb_alt, by = "reg_id")
 
 data_full |>
@@ -637,7 +642,3 @@ naab_aiss |>
   NM_df
 
 data_full <- left_join(data_full, NM_df, by = "reg_id")
-
-#rm(cdn, naab_aiss, naab_old, companies, control, treat, sires,
-#   base_sample, data_1, index_df, naab, naab_unique, match_data_1,
-#   rel_df, naab_line, naab_sample, inb_alt, sons, ratio, cnt, ix, NM_df)
