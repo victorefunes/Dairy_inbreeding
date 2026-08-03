@@ -1,6 +1,4 @@
 # Dairy_inbreeding
-<<<<<<< HEAD
-
 Replication code, data-processing scripts, and figures for the paper:
 
 > **Competing for Quality: Coordination Failure in Dairy Genetics Markets**
@@ -118,4 +116,3 @@ Victor Funes-Leal — Department of Agricultural Economics and Agribusiness, Uni
 Arkansas.
 =======
 Code and figures for my Job Market Paper
->>>>>>> second-repo-remote/main
